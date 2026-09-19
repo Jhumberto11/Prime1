@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="../API_PRIMECRM.Application/API_PRIMECRM.Application.csproj" />
+  <Project Path="../API_PRIMECRM.Domain/API_PRIMECRM.Domain.csproj" />
+  <Project Path="../API_PRIMECRM.Infraestructure/API_PRIMECRM.Infraestructure.csproj" />
+  <Project Path="API_PRIMECRM.csproj" />
+</Solution>
