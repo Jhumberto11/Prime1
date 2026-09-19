@@ -1,0 +1,17 @@
+C:\Users\imosa\source\repos\API_PRIMECRM.Application\bin\Debug\net10.0\API_PRIMECRM.Application.deps.json
+C:\Users\imosa\source\repos\API_PRIMECRM.Application\bin\Debug\net10.0\API_PRIMECRM.Application.dll
+C:\Users\imosa\source\repos\API_PRIMECRM.Application\bin\Debug\net10.0\API_PRIMECRM.Application.pdb
+C:\Users\imosa\source\repos\API_PRIMECRM.Application\bin\Debug\net10.0\API_PRIMECRM.Domain.dll
+C:\Users\imosa\source\repos\API_PRIMECRM.Application\bin\Debug\net10.0\API_PRIMECRM.Infraestructure.dll
+C:\Users\imosa\source\repos\API_PRIMECRM.Application\bin\Debug\net10.0\API_PRIMECRM.Domain.pdb
+C:\Users\imosa\source\repos\API_PRIMECRM.Application\bin\Debug\net10.0\API_PRIMECRM.Infraestructure.pdb
+C:\Users\imosa\source\repos\API_PRIMECRM.Application\obj\Debug\net10.0\API_PRIMECRM.Application.csproj.AssemblyReference.cache
+C:\Users\imosa\source\repos\API_PRIMECRM.Application\obj\Debug\net10.0\API_PRIMECRM.Application.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\imosa\source\repos\API_PRIMECRM.Application\obj\Debug\net10.0\API_PRIMECRM.Application.AssemblyInfoInputs.cache
+C:\Users\imosa\source\repos\API_PRIMECRM.Application\obj\Debug\net10.0\API_PRIMECRM.Application.AssemblyInfo.cs
+C:\Users\imosa\source\repos\API_PRIMECRM.Application\obj\Debug\net10.0\API_PRIMECRM.Application.csproj.CoreCompileInputs.cache
+C:\Users\imosa\source\repos\API_PRIMECRM.Application\obj\Debug\net10.0\API_PRIM.0E9901F4.Up2Date
+C:\Users\imosa\source\repos\API_PRIMECRM.Application\obj\Debug\net10.0\API_PRIMECRM.Application.dll
+C:\Users\imosa\source\repos\API_PRIMECRM.Application\obj\Debug\net10.0\refint\API_PRIMECRM.Application.dll
+C:\Users\imosa\source\repos\API_PRIMECRM.Application\obj\Debug\net10.0\API_PRIMECRM.Application.pdb
+C:\Users\imosa\source\repos\API_PRIMECRM.Application\obj\Debug\net10.0\ref\API_PRIMECRM.Application.dll

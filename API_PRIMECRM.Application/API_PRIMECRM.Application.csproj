@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\API_PRIMECRM.Domain\API_PRIMECRM.Domain.csproj" />
+    <ProjectReference Include="..\API_PRIMECRM.Infraestructure\API_PRIMECRM.Infraestructure.csproj" />
+  </ItemGroup>
+
+</Project>
