@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\imosa\\source\\repos\\API_PRIMECRM.Domain\\API_PRIMECRM.Domain.csproj": {}
+    "C:\\Users\\imosa\\OneDrive\\Documents\\Proyectos\\CRM PRIME\\API_PRIMECRM.Domain\\API_PRIMECRM.Domain.csproj": {}
   },
   "projects": {
-    "C:\\Users\\imosa\\source\\repos\\API_PRIMECRM.Domain\\API_PRIMECRM.Domain.csproj": {
+    "C:\\Users\\imosa\\OneDrive\\Documents\\Proyectos\\CRM PRIME\\API_PRIMECRM.Domain\\API_PRIMECRM.Domain.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\imosa\\source\\repos\\API_PRIMECRM.Domain\\API_PRIMECRM.Domain.csproj",
+        "projectUniqueName": "C:\\Users\\imosa\\OneDrive\\Documents\\Proyectos\\CRM PRIME\\API_PRIMECRM.Domain\\API_PRIMECRM.Domain.csproj",
         "projectName": "API_PRIMECRM.Domain",
-        "projectPath": "C:\\Users\\imosa\\source\\repos\\API_PRIMECRM.Domain\\API_PRIMECRM.Domain.csproj",
+        "projectPath": "C:\\Users\\imosa\\OneDrive\\Documents\\Proyectos\\CRM PRIME\\API_PRIMECRM.Domain\\API_PRIMECRM.Domain.csproj",
         "packagesPath": "C:\\Users\\imosa\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\imosa\\source\\repos\\API_PRIMECRM.Domain\\obj\\",
+        "outputPath": "C:\\Users\\imosa\\OneDrive\\Documents\\Proyectos\\CRM PRIME\\API_PRIMECRM.Domain\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

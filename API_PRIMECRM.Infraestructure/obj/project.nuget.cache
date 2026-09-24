@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "J5UfNxOU7mE=",
+  "dgSpecHash": "GKidFrvDVp8=",
   "success": true,
-  "projectFilePath": "C:\\Users\\imosa\\source\\repos\\API_PRIMECRM.Infraestructure\\API_PRIMECRM.Infraestructure.csproj",
+  "projectFilePath": "C:\\Users\\imosa\\OneDrive\\Documents\\Proyectos\\CRM PRIME\\API_PRIMECRM.Infraestructure\\API_PRIMECRM.Infraestructure.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\imosa\\.nuget\\packages\\azure.core\\1.50.0\\azure.core.1.50.0.nupkg.sha512",
     "C:\\Users\\imosa\\.nuget\\packages\\azure.identity\\1.17.1\\azure.identity.1.17.1.nupkg.sha512",

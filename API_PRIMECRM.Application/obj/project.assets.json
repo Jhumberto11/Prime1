@@ -1771,11 +1771,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\imosa\\source\\repos\\API_PRIMECRM.Application\\API_PRIMECRM.Application.csproj",
+      "projectUniqueName": "C:\\Users\\imosa\\OneDrive\\Documents\\Proyectos\\CRM PRIME\\API_PRIMECRM.Application\\API_PRIMECRM.Application.csproj",
       "projectName": "API_PRIMECRM.Application",
-      "projectPath": "C:\\Users\\imosa\\source\\repos\\API_PRIMECRM.Application\\API_PRIMECRM.Application.csproj",
+      "projectPath": "C:\\Users\\imosa\\OneDrive\\Documents\\Proyectos\\CRM PRIME\\API_PRIMECRM.Application\\API_PRIMECRM.Application.csproj",
       "packagesPath": "C:\\Users\\imosa\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\imosa\\source\\repos\\API_PRIMECRM.Application\\obj\\",
+      "outputPath": "C:\\Users\\imosa\\OneDrive\\Documents\\Proyectos\\CRM PRIME\\API_PRIMECRM.Application\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -1797,11 +1797,11 @@
           "framework": "net10.0",
           "targetAlias": "net10.0",
           "projectReferences": {
-            "C:\\Users\\imosa\\source\\repos\\API_PRIMECRM.Domain\\API_PRIMECRM.Domain.csproj": {
-              "projectPath": "C:\\Users\\imosa\\source\\repos\\API_PRIMECRM.Domain\\API_PRIMECRM.Domain.csproj"
+            "C:\\Users\\imosa\\OneDrive\\Documents\\Proyectos\\CRM PRIME\\API_PRIMECRM.Domain\\API_PRIMECRM.Domain.csproj": {
+              "projectPath": "C:\\Users\\imosa\\OneDrive\\Documents\\Proyectos\\CRM PRIME\\API_PRIMECRM.Domain\\API_PRIMECRM.Domain.csproj"
             },
-            "C:\\Users\\imosa\\source\\repos\\API_PRIMECRM.Infraestructure\\API_PRIMECRM.Infraestructure.csproj": {
-              "projectPath": "C:\\Users\\imosa\\source\\repos\\API_PRIMECRM.Infraestructure\\API_PRIMECRM.Infraestructure.csproj"
+            "C:\\Users\\imosa\\OneDrive\\Documents\\Proyectos\\CRM PRIME\\API_PRIMECRM.Infraestructure\\API_PRIMECRM.Infraestructure.csproj": {
+              "projectPath": "C:\\Users\\imosa\\OneDrive\\Documents\\Proyectos\\CRM PRIME\\API_PRIMECRM.Infraestructure\\API_PRIMECRM.Infraestructure.csproj"
             }
           }
         }
