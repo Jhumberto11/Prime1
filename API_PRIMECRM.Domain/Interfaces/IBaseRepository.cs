@@ -1,6 +1,7 @@
 ﻿using API_PRIMECRM.Domain.Models;
 using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Text;
 
 namespace API_PRIMECRM.Domain.Interfaces
@@ -10,8 +11,9 @@ namespace API_PRIMECRM.Domain.Interfaces
         Task<IEnumerable<TEntity>> GetAllAsync();
         Task<TEntity?> GetByIdAsync(int id);
         Task AddAsync(TEntity entity);
-        void Update(TEntity entity);
-        void Delete(TEntity entity);      
+        Task Update(TEntity entity);
+        Task Delete(TEntity entity);
+        Task<bool> ExistsAsync(Expression<Func<TEntity, bool>> predicate);
 
 
     }

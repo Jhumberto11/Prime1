@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("API_PRIMECRM.Application")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+7d4a1b25ec9ceeecb00ca2024d57a48d67f0d2ba")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f6e7e7586f27f6089a17fbac8324d8b1c6a4165b")]
 [assembly: System.Reflection.AssemblyProductAttribute("API_PRIMECRM.Application")]
 [assembly: System.Reflection.AssemblyTitleAttribute("API_PRIMECRM.Application")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
