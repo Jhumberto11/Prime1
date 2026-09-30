@@ -20,6 +20,7 @@ builder.Services.AddScoped
 
 //// Servicios Especificos
 builder.Services.AddScoped<BrandService>();
+builder.Services.AddScoped<ProductService>();
 
 
 //Db Context
