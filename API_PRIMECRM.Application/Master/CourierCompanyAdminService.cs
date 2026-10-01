@@ -43,11 +43,11 @@ namespace API_PRIMECRM.Application.Master
                 throw new ArgumentNullException(nameof(courierCompany));
             ///
             ///
-            ....
+  
             if (courierCompany.CashHandlingType <= 0)
-                throw new ArgumentException("La tarifa por libra debe ser mayor que cero.");
+                throw new ArgumentException("El tipo de manejo de efectivo no debe estar vacío.");
             if (courierCompany.CashHandlingValue <= 0)
-                throw new ArgumentException("El porcentaje de impuesto debe ser mayor que cero.");
+                throw new ArgumentException("El porcentaje del manejo de efectivo debe ser mayor que cero.");
             
 
             if (await _courierCompanyRepository.ExistsAsync(
