@@ -21,6 +21,8 @@ builder.Services.AddScoped
 //// Servicios Especificos
 builder.Services.AddScoped<BrandService>();
 builder.Services.AddScoped<ProductService>();
+builder.Services.AddScoped<CourierCompanyAdminService>();
+builder.Services.AddScoped<FreightCompanyAdminService>();
 
 
 //Db Context

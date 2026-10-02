@@ -25,7 +25,7 @@ namespace API_PRIMECRM.Controllers.Masters
 
         // GET: api/brands/5
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(int id)
+        public async Task<IActionResult> GetBrandById(int id)
         {
             try
             {
@@ -50,7 +50,7 @@ namespace API_PRIMECRM.Controllers.Masters
         }
         // POST: api/brands
         [HttpPost]
-        public async Task<IActionResult> Create(Brand brand)
+        public async Task<IActionResult> CreateBrandAsync(Brand brand)
         {
             try
             {
@@ -80,7 +80,7 @@ namespace API_PRIMECRM.Controllers.Masters
 
         // PUT: api/brands/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(
+        public async Task<IActionResult> UpdateBrandAsync(
             int id,
             Brand brand)
         {
@@ -119,7 +119,7 @@ namespace API_PRIMECRM.Controllers.Masters
 
         // DELETE: api/brands/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<IActionResult> DeleteBrandAsync(int id)
         {
             try
             {
