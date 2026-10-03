@@ -57,7 +57,7 @@ namespace API_PRIMECRM.Controllers.Masters
                 var createdBrand = await _brandService.AddBrandAsync(brand);
 
                 return CreatedAtAction(
-                    nameof(GetById),
+                    nameof(GetBrandById),
                     new { id = createdBrand.Id },
                     createdBrand
                 );
@@ -123,7 +123,7 @@ namespace API_PRIMECRM.Controllers.Masters
         {
             try
             {
-                await _brandService.DeleteBrandAsync(id);
+                await _brandService.DesactivateBrandAsync(id);
 
                 return Ok(new
                 {

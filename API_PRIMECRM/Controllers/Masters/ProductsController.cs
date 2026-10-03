@@ -122,7 +122,7 @@ namespace API_PRIMECRM.Controllers.Masters
         {
             try
             {
-                await _productService.DeleteProductAsync(id);
+                await _productService.DesactivateProductAsync(id);
 
                 return Ok(new
                 {

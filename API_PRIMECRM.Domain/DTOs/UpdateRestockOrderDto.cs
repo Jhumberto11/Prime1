@@ -11,5 +11,9 @@ namespace API_PRIMECRM.Application.Services.Restock_Orders
         public decimal Total { get; set; }
         public decimal EstimatedPounds { get; set; }
         public DateTime OrderDate { get; set; }
+        public int Quantity { get; set; }
+        public int PaymentMethodId { get; set; }
+        public string? Notes { get; set; }
+
     }
 }
