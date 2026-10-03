@@ -1,4 +1,4 @@
-﻿using API_PRIMECRM.Application.Master;
+﻿using API_PRIMECRM.Application.Services.Master;
 using API_PRIMECRM.Domain.Models.Masters;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -117,7 +117,7 @@ namespace API_PRIMECRM.Controllers.Masters
                 {
                     message = ex.Message
                 });
-            }
+            } 
             catch (KeyNotFoundException ex)
             {
                 return NotFound(new

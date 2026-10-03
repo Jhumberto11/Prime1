@@ -32,7 +32,7 @@ namespace API_PRIMECRM.Domain.Models.Reabastecimimento
         // Precio pagado por cada unidad en Amazon/distribuidor
         [NotMapped]
         public decimal StoreUnitPrice =>
-            Total / StoreUnitPrice; 
+            Quantity > 0 ? Total / Quantity : 0; 
 
 
         // Empresa encargada de traer el producto
@@ -52,14 +52,14 @@ namespace API_PRIMECRM.Domain.Models.Reabastecimimento
         public decimal EstimatedPounds { get; set; }
 
 
-        // Flete calculado inicialmente
+        // Flete calculado inicialmente (costo libras + Tax + Otros cargos(empresa de flete))
         [Column(TypeName = "decimal(18,2)")]
         public decimal EstimatedFreight { get; set; }
 
 
         // Flete que realmente se pagó
         [Column(TypeName = "decimal(18,2)")]
-        public decimal? ActualFreight { get; set; }
+        public decimal ActualFreight { get; set; } = 0.00m;
 
 
         // Impuestos estimados
@@ -74,7 +74,7 @@ namespace API_PRIMECRM.Domain.Models.Reabastecimimento
 
         // Costo final por unidad ya puesta en El Salvador
         [Column(TypeName = "decimal(18,2)")]
-        public decimal? LandedUnitCost { get; set; }
+        public decimal EstimatedLandedUnitCost { get; set; }
 
 
         // Estado financiero de la compra

@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace API_PRIMECRM.Application.Master
+namespace API_PRIMECRM.Application.Services.Master
 {
     public class BrandService
     {
@@ -82,7 +82,7 @@ namespace API_PRIMECRM.Application.Master
             await _brandRepository.Update(existingBrand);
         }
 
-        public async Task DeleteBrandAsync(int brandId)
+        public async Task DesactivateBrandAsync(int brandId)
         {
             if (brandId <= 0)
                 throw new ArgumentException("El Id de la marca debe ser mayor que cero.");
@@ -94,7 +94,23 @@ namespace API_PRIMECRM.Application.Master
                     $"No existe una marca con Id {brandId}."
                 );
 
-            await _brandRepository.Delete(brand);
+            brand.IsActive = false;
+            await _brandRepository.Update(brand);
+        }
+        public async Task ActivateBrandAsync(int brandId)
+        {
+            if (brandId <= 0)
+                throw new ArgumentException("El Id de la marca debe ser mayor que cero.");
+
+            var brand = await _brandRepository.GetByIdAsync(brandId);
+
+            if (brand == null)
+                throw new KeyNotFoundException(
+                    $"No existe una marca con Id {brandId}."
+                );
+
+            brand.IsActive = true;
+            await _brandRepository.Update(brand);
         }
 
         private static void ValidateBrand(Brand brand)
