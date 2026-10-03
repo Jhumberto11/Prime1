@@ -20,8 +20,6 @@ namespace API_PRIMECRM.Domain.DTOs
 
         public decimal EstimatedPounds { get; set; }
 
-        public decimal OtherCharges { get; set; }
-
         public string? Notes { get; set; }
     }
 }

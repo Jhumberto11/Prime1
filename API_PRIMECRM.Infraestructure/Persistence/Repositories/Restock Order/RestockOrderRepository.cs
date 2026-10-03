@@ -64,11 +64,12 @@ namespace API_PRIMECRM.Infraestructure.Persistence.Repositories.Restock_Order
                 .ToListAsync();
         }
 
-        public async Task UpdateAsync(RestockOrder restockOrder)
+        public async Task<RestockOrder?> UpdateAsync(RestockOrder restockOrder)
         {
             _context.RestockOrders.Update(restockOrder);
 
             await _context.SaveChangesAsync();
+            return restockOrder;
         }
     }
 }
