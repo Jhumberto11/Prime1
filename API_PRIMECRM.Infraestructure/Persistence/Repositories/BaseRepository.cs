@@ -40,6 +40,7 @@ namespace API_PRIMECRM.Infraestructure.Persistence.Repositories
             await _context.SaveChangesAsync();
         }
 
+        public async
 
         public async Task Delete(TEntity entity)
         {

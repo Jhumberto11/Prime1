@@ -1,4 +1,4 @@
-using API_PRIMECRM.Application.Master;
+using API_PRIMECRM.Application.Services.Master;
 using API_PRIMECRM.Domain.Interfaces;
 using API_PRIMECRM.Infraestructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;

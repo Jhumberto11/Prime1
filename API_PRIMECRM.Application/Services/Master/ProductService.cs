@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace API_PRIMECRM.Application.Master
+namespace API_PRIMECRM.Application.Services.Master
 {
     public class ProductService
     {
@@ -80,7 +80,7 @@ namespace API_PRIMECRM.Application.Master
         }
 
 
-        public async Task DeleteProductAsync(int id)
+        public async Task DesactivateProductAsync(int id)
         {
             if (id <= 0)
                 throw new ArgumentException("El Id del producto debe ser mayor que cero.");
@@ -89,7 +89,26 @@ namespace API_PRIMECRM.Application.Master
             if (product == null)
                 throw new KeyNotFoundException($"No existe un producto con Id {id}.");
 
-            await _productRepository.Delete(product);
+
+            product.IsActive = false;
+
+
+            await _productRepository.Update(product);
+        }
+        public async Task ActivateProductAsync(int id)
+        {
+            if (id <= 0)
+                throw new ArgumentException("El Id del producto debe ser mayor que cero.");
+
+            var product = await _productRepository.GetByIdAsync(id);
+            if (product == null)
+                throw new KeyNotFoundException($"No existe un producto con Id {id}.");
+
+
+            product.IsActive = true;
+
+
+            await _productRepository.Update(product);
         }
 
         private static void ValidateProduct(Product product)
