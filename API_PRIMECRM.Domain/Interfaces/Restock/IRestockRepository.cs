@@ -15,7 +15,7 @@ namespace API_PRIMECRM.Domain.Interfaces.Restock
 
         Task AddAsync(RestockOrder restockOrder);
 
-        Task UpdateAsync(RestockOrder restockOrder);
+        Task<RestockOrder?> UpdateAsync(RestockOrder restockOrder);
 
         Task<bool> ExistsAsync(int id);
 

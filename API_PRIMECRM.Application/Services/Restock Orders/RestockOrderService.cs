@@ -109,8 +109,18 @@ namespace API_PRIMECRM.Application.Services.Restock_Orders
                 CalculateEstimatedLandedUnitCost(
                 dto.Total,
                 (estimatedTaxes + estimatedFreight),
-                dto.OtherCharges,
                 dto.Quantity);
+            // -------------------------
+            // CALCULAR ESTIMADO TOTAL SV
+            // -------------------------
+
+            decimal estimatedTotalSV =
+                CalculateTotalSV(
+                dto.Total,
+                estimatedFreight,
+                estimatedTaxes,
+                0.00m
+                );
 
 
             // -------------------------
@@ -139,7 +149,7 @@ namespace API_PRIMECRM.Application.Services.Restock_Orders
 
                 EstimatedLandedUnitCost = estimatedLandedUnitCost,
 
-                OtherCharges = dto.OtherCharges,
+                EstimatedTotalSV = estimatedTotalSV,
 
                 PaymentStatus = PaymentStatus.Pending,
 
@@ -162,9 +172,9 @@ namespace API_PRIMECRM.Application.Services.Restock_Orders
 
         public Task<RestockOrder?> GetByIdAsync(int id)
         {
-            if(id <= 0)
+            if (id <= 0)
             {
-                throw new ArgumentException("El ID debe ser mayor que cero.");                
+                throw new ArgumentException("El ID debe ser mayor que cero.");
             }
             var result = _restockOrderRepository.GetByIdAsync(id);
             if (result == null)
@@ -193,8 +203,12 @@ namespace API_PRIMECRM.Application.Services.Restock_Orders
 
 
 
-        public async Task<RestockOrder?> RegisterActualFreightAsync(int id, decimal otherCharges)
+        public async Task<RestockOrder?> RegisterActualCostsAsync(int id, decimal otherCharges)
         {
+            if (id <= 0)
+                throw new ArgumentException(
+                    "El ID debe ser mayor que cero.");
+
             if (otherCharges < 0)
                 throw new ArgumentException(
                     "Los cargos adicionales no pueden ser negativos.");
@@ -205,17 +219,23 @@ namespace API_PRIMECRM.Application.Services.Restock_Orders
             if (restockOrder == null)
             {
                 throw new KeyNotFoundException(
-                    $"No se encontró un pedido de reabastecimiento con el ID {id}.");   
+                    $"No se encontró un pedido de reabastecimiento con el ID {id}.");
             }
 
             restockOrder.OtherCharges = otherCharges;
-            restockOrder.ActualFreight = ( restockOrder.EstimatedFreight + otherCharges);
+            restockOrder.ActualFreight = (restockOrder.EstimatedFreight + otherCharges);
 
-            restockOrder.EstimatedLandedUnitCost = CalculateLandedUnitCost(
+            restockOrder.ActualLandedUnitCost = CalculateLandedUnitCost(
                 restockOrder.Total,
-                restockOrder.ActualFreight,
+                restockOrder.ActualFreight ?? 0.00m,
                 otherCharges,
                 restockOrder.Quantity);
+
+            restockOrder.ActualTotalSV = CalculateTotalSV(
+                restockOrder.Total,
+                restockOrder.ActualFreight ?? 0.00m,
+                restockOrder.EstimatedTaxes,
+                otherCharges);
 
 
             await _restockOrderRepository
@@ -226,7 +246,7 @@ namespace API_PRIMECRM.Application.Services.Restock_Orders
 
         private decimal CalculateEstimatedFreight(FreightCompany company, decimal pounds)
         {
-            return ((pounds * company.RatePerLB)+ company.OtherCharges);
+            return ((pounds * company.RatePerLB) + company.OtherCharges);
         }
 
 
@@ -236,12 +256,12 @@ namespace API_PRIMECRM.Application.Services.Restock_Orders
                    (company.TaxPercentSV / 100m);
         }
 
-        private decimal CalculateEstimatedLandedUnitCost(decimal total, decimal estimatedFreight, decimal otherCharges, int quantity)
+        private decimal CalculateEstimatedLandedUnitCost(decimal total, decimal estimatedFreight, int quantity)
         {
             if (quantity <= 0)
                 throw new ArgumentException(
                     "La cantidad debe ser mayor que cero.");
-            return (total + estimatedFreight + otherCharges) / quantity;
+            return (total + estimatedFreight) / quantity;
         }
         private decimal CalculateLandedUnitCost(decimal total, decimal actualFreight, decimal otherCharges, int quantity)
         {
@@ -249,6 +269,43 @@ namespace API_PRIMECRM.Application.Services.Restock_Orders
                 throw new ArgumentException(
                     "La cantidad debe ser mayor que cero.");
             return (total + actualFreight + otherCharges) / quantity;
+        }
+
+        private decimal CalculateTotalSV(decimal total, decimal estimatedFreight, decimal estimatedTaxes, decimal? otherCharges)
+        {
+
+            return total
+                + estimatedFreight
+                + estimatedTaxes
+                + (otherCharges ?? 0.00m);
+        }
+
+        public async Task<RestockOrder?> UpdateAsync(int id, UpdateRestockOrderDto dto)
+        {
+            if (id <= 0)
+                throw new ArgumentException(
+                    "El ID debe ser mayor que cero.");
+            try
+            {
+                var restockOrder = await _restockOrderRepository.GetByIdAsync(id);
+                if (restockOrder == null)
+                    throw new KeyNotFoundException(
+                        $"No se encontró un pedido de reabastecimiento con el ID {id}.");
+                restockOrder.OrderDate = dto.OrderDate;
+                restockOrder.ProductId = dto.ProductId;
+                restockOrder.FreightCompanyId = dto.FreightCompanyId;
+                restockOrder.Total = dto.Total;
+                restockOrder.EstimatedPounds = dto.EstimatedPounds;
+                restockOrder.Quantity = dto.Quantity;
+                restockOrder.PaymentMethodId = dto.PaymentMethodId;
+                restockOrder.Notes = dto.Notes;
+                return await _restockOrderRepository.UpdateAsync(restockOrder);
+
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error al actualizar el pedido de reabastecimiento: {ex.Message}");
+            }
         }
     }
 }

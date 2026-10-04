@@ -59,7 +59,7 @@ namespace API_PRIMECRM.Domain.Models.Reabastecimimento
 
         // Flete que realmente se pagó
         [Column(TypeName = "decimal(18,2)")]
-        public decimal ActualFreight { get; set; } = 0.00m;
+        public decimal? ActualFreight { get; set; } = 0.00m;
 
 
         // Impuestos estimados
@@ -69,12 +69,21 @@ namespace API_PRIMECRM.Domain.Models.Reabastecimimento
 
         // Otros cobros
         [Column(TypeName = "decimal(18,2)")]
-        public decimal OtherCharges { get; set; } = 0.00m;
+        public decimal? OtherCharges { get; set; } = 0.00m;
 
+
+        // Costo estimado final por unidad ya puesta en El Salvador
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal EstimatedLandedUnitCost { get; set; }
 
         // Costo final por unidad ya puesta en El Salvador
         [Column(TypeName = "decimal(18,2)")]
-        public decimal EstimatedLandedUnitCost { get; set; }
+        public decimal? ActualLandedUnitCost { get; set; } = 0.00m;
+
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal EstimatedTotalSV { get; set; }
+
+        public decimal? ActualTotalSV { get; set; } = 0.00m;
 
 
         // Estado financiero de la compra

@@ -1,4 +1,5 @@
-﻿using API_PRIMECRM.Domain.DTOs;
+﻿using API_PRIMECRM.Application.Services.Restock_Orders;
+using API_PRIMECRM.Domain.DTOs;
 using API_PRIMECRM.Domain.Models.Reabastecimimento;
 using System;
 using System.Collections.Generic;
@@ -16,8 +17,12 @@ namespace API_PRIMECRM.Domain.Interfaces.Services
 
         Task<RestockOrder> CreateAsync(CreateRestockOrderDto dto);
 
-        Task<RestockOrder?> RegisterActualFreightAsync(
+        Task<RestockOrder?> RegisterActualCostsAsync(
             int id,
-            decimal actualFreight);
+            decimal otherCharges);
+
+        Task<RestockOrder?> UpdateAsync(
+            int id,
+            UpdateRestockOrderDto dto);
     }
 }
