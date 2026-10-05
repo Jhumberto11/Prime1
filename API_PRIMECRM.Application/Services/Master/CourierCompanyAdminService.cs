@@ -20,6 +20,12 @@ namespace API_PRIMECRM.Application.Services.Master
             return await _courierCompanyRepository.GetAllAsync();
         }
 
+        public async Task<IEnumerable<CourierCompany>> GetActiveCourierCompanyAsync()
+        {
+            return await _courierCompanyRepository.GetAllActivatedAsync();
+        }
+
+
         public async Task<CourierCompany?> GetCourierCompanyByIdAsync(int id)
         {
 

@@ -23,6 +23,7 @@ namespace API_PRIMECRM.Domain.Models.Reabastecimimento
 
 
         //Total Paggado
+        [Column(TypeName = "decimal(18,2)")]
         public decimal Total {  get; set; }
 
         // Cantidad comprada
@@ -52,7 +53,7 @@ namespace API_PRIMECRM.Domain.Models.Reabastecimimento
         public decimal EstimatedPounds { get; set; }
 
 
-        // Flete calculado inicialmente (costo libras + Tax + Otros cargos(empresa de flete))
+        // Flete calculado inicialmente (costo libras + Otros cargos(empresa de flete))
         [Column(TypeName = "decimal(18,2)")]
         public decimal EstimatedFreight { get; set; }
 
@@ -60,6 +61,10 @@ namespace API_PRIMECRM.Domain.Models.Reabastecimimento
         // Flete que realmente se pagó
         [Column(TypeName = "decimal(18,2)")]
         public decimal? ActualFreight { get; set; } = 0.00m;
+
+        // Total estimado de flete + impuestos
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal EstimatedTotalFreightAndTaxes { get; set; }
 
 
         // Impuestos estimados
@@ -83,6 +88,7 @@ namespace API_PRIMECRM.Domain.Models.Reabastecimimento
         [Column(TypeName = "decimal(18,2)")]
         public decimal EstimatedTotalSV { get; set; }
 
+        [Column(TypeName = "decimal(18,2)")]
         public decimal? ActualTotalSV { get; set; } = 0.00m;
 
 

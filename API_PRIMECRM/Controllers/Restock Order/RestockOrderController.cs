@@ -1,5 +1,4 @@
-﻿using API_PRIMECRM.Application.Services.Restock_Orders;
-using API_PRIMECRM.Domain.DTOs;
+﻿using API_PRIMECRM.Domain.DTOs.Restock;
 using API_PRIMECRM.Domain.Interfaces.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -16,12 +15,15 @@ namespace API_PRIMECRM.Controllers.Restock_Order
             _restockOrderService = restockOrderService;
         }
 
+
+        [HttpGet]
         public async Task<IActionResult> GetAll()
         {
             var orders = await _restockOrderService.GetAllAsync();
             return Ok(orders);
         }
 
+        [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
             var order = await _restockOrderService.GetByIdAsync(id);
@@ -29,12 +31,15 @@ namespace API_PRIMECRM.Controllers.Restock_Order
                 return NotFound();
             return Ok(order);
         }
+
+        [HttpGet("product/{productId}")]
         public async Task<IActionResult> GetByProductId(int productId)
         {
             var orders = await _restockOrderService.GetByProductIdAsync(productId);
             return Ok(orders);
         }
 
+        [HttpPost]
         public async Task<IActionResult> Create(CreateRestockOrderDto dto)
         {
             try
@@ -57,11 +62,16 @@ namespace API_PRIMECRM.Controllers.Restock_Order
 
         }
 
-        public async Task<IActionResult> RegisterActualCosts(int id, decimal otherCharges)
+        [HttpPatch("register-actual-costs")]
+        public async Task<IActionResult> RegisterActualCosts(ActualCostRestockUpdate dto)
         {
+            if (ModelState.IsValid == false)
+            {
+                return BadRequest(ModelState);
+            }
             try
             {
-                var order = await _restockOrderService.RegisterActualCostsAsync(id, otherCharges);
+                var order = await _restockOrderService.RegisterActualCostsAsync(dto.RestockOrderId, dto.OtherCharges);
                 if (order == null)
                     return NotFound();
                 return Ok(order);
@@ -72,8 +82,13 @@ namespace API_PRIMECRM.Controllers.Restock_Order
             }
         }
 
+        [HttpPatch("{id}")]
         public async Task<IActionResult> Update(int id, UpdateRestockOrderDto dto)
         {
+            if (ModelState.IsValid == false)
+            {
+                return BadRequest(ModelState);
+            }
             try
             {
                 var order = await _restockOrderService.UpdateAsync(id, dto);

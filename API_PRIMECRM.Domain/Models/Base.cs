@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace API_PRIMECRM.Domain.Models
 {
@@ -9,6 +10,7 @@ namespace API_PRIMECRM.Domain.Models
 
         [Required]
         [MaxLength(100)]
+        [DisplayName("Nombre es requerido")]
         public string Name { get; set; }
         public bool IsActive { get; set; } = true;
 

@@ -1,4 +1,5 @@
 ﻿using API_PRIMECRM.Application.Services.Master;
+using API_PRIMECRM.Domain.DTOs.Masters;
 using API_PRIMECRM.Domain.Models.Masters;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -16,12 +17,36 @@ namespace API_PRIMECRM.Controllers.Masters
         }
 
 
+        [HttpGet("all")]
         public async Task<IActionResult> GetAllCouriers()
         {
             var couriers = await _courierCompanyAdminService.GetAllCourierCompanyAsync();
+            if (couriers == null || !couriers.Any())
+            {
+                return NotFound(new
+                {
+                    message = "No se encontraron compañías de transporte."
+                });
+            }
             return Ok(couriers);
         }
 
+        [HttpGet("all-actives")]
+        public async Task<IActionResult> GetActiveCouriers()
+        {
+            var couriers = await _courierCompanyAdminService.GetActiveCourierCompanyAsync();
+            if (couriers == null || !couriers.Any())
+            {
+                return NotFound(new
+                {
+                    message = "No se encontraron compañías de transporte activas."
+                });
+            }   
+            return Ok(couriers);
+        }
+
+
+        [HttpGet("{id}")]
         public async Task<IActionResult> GetCourierById(int id)
         {
             try
@@ -45,11 +70,26 @@ namespace API_PRIMECRM.Controllers.Masters
             }
         }
 
-        public async Task<IActionResult> CreateCourierAsync(CourierCompany courierCompany)
+        [HttpPost]
+        public async Task<IActionResult> CreateCourierAsync(CourierDto dto)
         {
+            if(ModelState.IsValid == false)
+            {
+                return BadRequest(new
+                {
+                    message = "El modelo proporcionado no es válido."
+                });
+            }
+
+            CourierCompany newCourier = new CourierCompany
+            {
+                Name = dto.Name,
+                DeliveryRate = dto.DeliveryRate,
+                CashHandlingValue = dto.CashHandlingValue
+            };
             try
             {
-                var newCourieCompany = await _courierCompanyAdminService.AddCourierCompanyAsync(courierCompany);
+                var newCourieCompany = await _courierCompanyAdminService.AddCourierCompanyAsync(newCourier);
                 return CreatedAtAction(nameof(GetCourierById), new { id = newCourieCompany.Id }, newCourieCompany);
             }
             catch (ArgumentException ex)
@@ -67,18 +107,36 @@ namespace API_PRIMECRM.Controllers.Masters
                 });
             }
         }
-        public async Task<IActionResult> UpdateCourierAsync(int id, CourierCompany courierCompany)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateCourierAsync(int id, CourierDto updateDto)
         {
+
+            CourierCompany courier = await _courierCompanyAdminService.GetCourierCompanyByIdAsync(id);
+            if(courier == null)
+            {
+                return BadRequest(new
+                {
+                    message = "La compañía de transporte no fue encontrada."
+                });
+            }
             try
             {
-                if (id != courierCompany.Id)
+                if (id != courier.Id)
                 {
                     return BadRequest(new
                     {
                         message = "El Id proporcionado no coincide con el Id de la compañía de transporte."
                     });
                 }
-                await _courierCompanyAdminService.UpdateCourierCompanyAsync(courierCompany);
+
+                /// Actualizacion de Campos
+                courier.Name = updateDto.Name;
+                courier.DeliveryRate = updateDto.DeliveryRate;
+                courier.CashHandlingValue = updateDto.CashHandlingValue;
+
+
+
+                await _courierCompanyAdminService.UpdateCourierCompanyAsync(courier);
                 return Ok(new
                 {
                     message = "Compañía de transporte actualizada correctamente."
@@ -100,6 +158,7 @@ namespace API_PRIMECRM.Controllers.Masters
             }
         }
 
+        [HttpDelete("desactivate/{id}")]
         public async Task<IActionResult> DesactivateCourierAsync(int id)
         {
 
@@ -128,6 +187,8 @@ namespace API_PRIMECRM.Controllers.Masters
 
 
         }
+
+        [HttpPatch("activate/{id}")]
         public async Task<IActionResult> ActivateCourierAsync(int id)
         {
 

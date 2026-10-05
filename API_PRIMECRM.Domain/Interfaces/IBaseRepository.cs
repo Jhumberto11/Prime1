@@ -9,6 +9,7 @@ namespace API_PRIMECRM.Domain.Interfaces
     public interface IBaseRepository<TEntity> where TEntity  : Base
     {
         Task<IEnumerable<TEntity>> GetAllAsync();
+        Task<IEnumerable<TEntity>> GetAllActivatedAsync();
         Task<TEntity?> GetByIdAsync(int id);
         Task AddAsync(TEntity entity);
         Task Update(TEntity entity);

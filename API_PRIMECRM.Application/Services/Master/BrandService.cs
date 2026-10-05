@@ -16,7 +16,14 @@ namespace API_PRIMECRM.Application.Services.Master
 
         public async Task<IEnumerable<Brand>> GetAllBrandsAsync()
         {
+            
+
             return await _brandRepository.GetAllAsync();
+        }
+
+        public async Task<IEnumerable<Brand>> GetActiveBrandsAsync()
+        {
+            return await _brandRepository.GetAllActivatedAsync();
         }
 
         public async Task<Brand?> GetBrandByIdAsync(int id)

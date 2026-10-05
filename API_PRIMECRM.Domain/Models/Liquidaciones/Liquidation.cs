@@ -3,6 +3,7 @@ using API_PRIMECRM.Domain.Models.Masters;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
 
 namespace API_PRIMECRM.Domain.Models.Liquidaciones
@@ -24,6 +25,7 @@ namespace API_PRIMECRM.Domain.Models.Liquidaciones
 
 
         // Monto Total de Liquidacion
+        [Column(TypeName = "decimal(18,2)")]
         public decimal SettlementTotal { get; set; }
 
 
