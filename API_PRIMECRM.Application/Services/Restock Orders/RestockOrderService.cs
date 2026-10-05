@@ -8,6 +8,7 @@ using API_PRIMECRM.Domain.Models.Reabastecimimento;
 using API_PRIMECRM.Domain.Models.Reabastecimimento.Enums;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Text;
 
 namespace API_PRIMECRM.Application.Services.Restock_Orders
@@ -108,7 +109,8 @@ namespace API_PRIMECRM.Application.Services.Restock_Orders
             decimal estimatedLandedUnitCost =
                 CalculateEstimatedLandedUnitCost(
                 dto.Total,
-                (estimatedTaxes + estimatedFreight),
+                estimatedFreight,
+                estimatedTaxes,
                 dto.Quantity);
             // -------------------------
             // CALCULAR ESTIMADO TOTAL SV
@@ -143,7 +145,9 @@ namespace API_PRIMECRM.Application.Services.Restock_Orders
 
                 EstimatedPounds = dto.EstimatedPounds,
 
-                EstimatedFreight = estimatedFreight + estimatedTaxes,
+                EstimatedFreight = estimatedFreight ,
+
+                EstimatedTotalFreightAndTaxes = estimatedFreight + estimatedTaxes,
 
                 EstimatedTaxes = estimatedTaxes,
 
@@ -170,13 +174,13 @@ namespace API_PRIMECRM.Application.Services.Restock_Orders
             return await _restockOrderRepository.GetAllAsync();
         }
 
-        public Task<RestockOrder?> GetByIdAsync(int id)
+        public async Task<RestockOrder?> GetByIdAsync(int id)
         {
             if (id <= 0)
             {
                 throw new ArgumentException("El ID debe ser mayor que cero.");
             }
-            var result = _restockOrderRepository.GetByIdAsync(id);
+            var result =  await _restockOrderRepository.GetByIdAsync(id);
             if (result == null)
             {
                 throw new KeyNotFoundException($"No se encontró un pedido de reabastecimiento con el ID {id}.");
@@ -203,6 +207,14 @@ namespace API_PRIMECRM.Application.Services.Restock_Orders
 
 
 
+        /// <summary>
+        /// Registra los costos reales de un pedido de reabastecimiento, incluyendo cargos adicionales y recalcula el costo por unidad y el total en El Salvador
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="otherCharges"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
+        /// <exception cref="KeyNotFoundException"></exception>
         public async Task<RestockOrder?> RegisterActualCostsAsync(int id, decimal otherCharges)
         {
             if (id <= 0)
@@ -244,25 +256,56 @@ namespace API_PRIMECRM.Application.Services.Restock_Orders
             return restockOrder;
         }
 
+
+        /// <summary>
+        /// Calcula el flete estimado basado en la empresa de flete y el peso en libras
+        /// </summary>
+        /// <param name="company"></param>
+        /// <param name="pounds"></param>
+        /// <returns></returns>
+
         private decimal CalculateEstimatedFreight(FreightCompany company, decimal pounds)
         {
             return ((pounds * company.RatePerLB) + company.OtherCharges);
         }
 
+        /// <summary>
+        /// Calcula los impuestos estimados basado en la empresa de flete y el total de la compra   
+        /// </summary>
+        /// <param name="company"></param>
+        /// <param name="purchaseTotal"></param>
+        /// <returns></returns>
 
         private decimal CalculateEstimatedTaxes(FreightCompany company, decimal purchaseTotal)
         {
             return purchaseTotal *
                    (company.TaxPercentSV / 100m);
         }
-
-        private decimal CalculateEstimatedLandedUnitCost(decimal total, decimal estimatedFreight, int quantity)
+        /// <summary>
+        /// Calcula el costo estimado por unidad ya puesta en El Salvador
+        /// </summary>
+        /// <param name="total"></param>
+        /// <param name="estimatedFreight"></param>
+        /// <param name="estimatedTaxes"></param>
+        /// <param name="quantity"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
+        private decimal CalculateEstimatedLandedUnitCost(decimal total, decimal estimatedFreight, decimal estimatedTaxes, int quantity)
         {
             if (quantity <= 0)
                 throw new ArgumentException(
                     "La cantidad debe ser mayor que cero.");
-            return (total + estimatedFreight) / quantity;
+            return (total + estimatedFreight + estimatedTaxes) / quantity;
         }
+
+
+
+        //
+        //
+        // Calculo de Costos Reales
+        //
+        // 
+
         private decimal CalculateLandedUnitCost(decimal total, decimal actualFreight, decimal otherCharges, int quantity)
         {
             if (quantity <= 0)
@@ -285,27 +328,51 @@ namespace API_PRIMECRM.Application.Services.Restock_Orders
             if (id <= 0)
                 throw new ArgumentException(
                     "El ID debe ser mayor que cero.");
-            try
-            {
-                var restockOrder = await _restockOrderRepository.GetByIdAsync(id);
-                if (restockOrder == null)
-                    throw new KeyNotFoundException(
-                        $"No se encontró un pedido de reabastecimiento con el ID {id}.");
-                restockOrder.OrderDate = dto.OrderDate;
-                restockOrder.ProductId = dto.ProductId;
-                restockOrder.FreightCompanyId = dto.FreightCompanyId;
-                restockOrder.Total = dto.Total;
-                restockOrder.EstimatedPounds = dto.EstimatedPounds;
-                restockOrder.Quantity = dto.Quantity;
-                restockOrder.PaymentMethodId = dto.PaymentMethodId;
-                restockOrder.Notes = dto.Notes;
-                return await _restockOrderRepository.UpdateAsync(restockOrder);
+            
+             var product = await _productRepository.GetByIdAsync(dto.ProductId);
+             var freightCompany = await _freightCompanyRepository.GetByIdAsync(dto.FreightCompanyId);
 
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Error al actualizar el pedido de reabastecimiento: {ex.Message}");
-            }
+             if(product == null)
+                 throw new KeyNotFoundException(
+                     $"No se encontró un producto con el ID {dto.ProductId}.");
+
+             if(freightCompany == null)
+                 throw new KeyNotFoundException(
+                     $"No se encontró una empresa de flete con el ID {dto.FreightCompanyId}.");
+
+             var restockOrder = await _restockOrderRepository.GetByIdAsync(id);
+             if (restockOrder == null)
+                 throw new KeyNotFoundException(
+                     $"No se encontró un pedido de reabastecimiento con el ID {id}.");
+             restockOrder.OrderDate = dto.OrderDate;
+             restockOrder.ProductId = dto.ProductId;
+             restockOrder.FreightCompanyId = dto.FreightCompanyId;
+             restockOrder.Total = dto.Total;
+             restockOrder.EstimatedPounds = dto.EstimatedPounds;
+             restockOrder.Quantity = dto.Quantity;
+             restockOrder.PaymentMethodId = dto.PaymentMethodId;
+             restockOrder.Notes = dto.Notes;
+
+             restockOrder.EstimatedFreight = CalculateEstimatedFreight(
+                 await _freightCompanyRepository.GetByIdAsync(dto.FreightCompanyId),
+                 dto.EstimatedPounds);
+
+             restockOrder.EstimatedTaxes = CalculateEstimatedTaxes(
+                 await _freightCompanyRepository.GetByIdAsync(dto.FreightCompanyId),
+                 dto.Total);
+
+             restockOrder.EstimatedTotalFreightAndTaxes = restockOrder.EstimatedFreight + restockOrder.EstimatedTaxes;
+
+             restockOrder.EstimatedLandedUnitCost = CalculateEstimatedLandedUnitCost(
+                 dto.Total,
+                 restockOrder.EstimatedFreight,
+                 restockOrder.EstimatedTaxes,
+                 dto.Quantity);
+
+             return await _restockOrderRepository.UpdateAsync(restockOrder);
+
+            
+            
         }
     }
 }
