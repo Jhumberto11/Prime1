@@ -1,4 +1,4 @@
-﻿using API_PRIMECRM.Domain.DTOs;
+﻿using API_PRIMECRM.Domain.DTOs.Restock;
 using API_PRIMECRM.Domain.Interfaces;
 using API_PRIMECRM.Domain.Interfaces.Master_Interfaces;
 using API_PRIMECRM.Domain.Interfaces.Restock;

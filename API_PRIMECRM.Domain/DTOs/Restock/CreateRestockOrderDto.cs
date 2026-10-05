@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace API_PRIMECRM.Domain.DTOs
+namespace API_PRIMECRM.Domain.DTOs.Restock
 {
     public class CreateRestockOrderDto
     {

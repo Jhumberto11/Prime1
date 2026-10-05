@@ -52,5 +52,10 @@ namespace API_PRIMECRM.Infraestructure.Persistence.Repositories
         {
             return await _dbSet.AnyAsync(predicate);
         }
+
+        public async Task<IEnumerable<TEntity>> GetAllActivatedAsync()
+        {
+            return await _dbSet.Where(e => e.IsActive).ToListAsync();
+        }
     }
 }

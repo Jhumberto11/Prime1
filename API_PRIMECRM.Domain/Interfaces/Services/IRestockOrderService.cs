@@ -1,5 +1,4 @@
-﻿using API_PRIMECRM.Application.Services.Restock_Orders;
-using API_PRIMECRM.Domain.DTOs;
+﻿using API_PRIMECRM.Domain.DTOs.Restock;
 using API_PRIMECRM.Domain.Models.Reabastecimimento;
 using System;
 using System.Collections.Generic;

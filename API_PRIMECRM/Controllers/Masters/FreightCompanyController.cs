@@ -15,12 +15,15 @@ namespace API_PRIMECRM.Controllers.Masters
             _freightCompanyAdminService = freightCompanyAdminService;
         }
 
+
+        [HttpGet]
         public async Task<IActionResult> GetAllFreightCompanies()
         {
             var freightCompanies = await _freightCompanyAdminService.GetAllFreightCompanyAsync();
             return Ok(freightCompanies);
         }
 
+        [HttpGet("{id}")]
         public async Task<IActionResult> GetFreightCompanyById(int id)
         {
             try
@@ -44,6 +47,7 @@ namespace API_PRIMECRM.Controllers.Masters
             }
         }
 
+        [HttpPost]
         public async Task<IActionResult> CreateFreightCompanyAsync(FreightCompany freightCompany)
         {
             try
@@ -66,6 +70,8 @@ namespace API_PRIMECRM.Controllers.Masters
                 });
             }
         }
+
+        [HttpPut("{id}")]
         public async Task<IActionResult> UpdateFreightCompanyAsync(int id, FreightCompany freightCompany)
         {
             try
@@ -99,6 +105,7 @@ namespace API_PRIMECRM.Controllers.Masters
             }
         }
 
+        [HttpDelete("desactivate/{id}")]
         public async Task<IActionResult> DesactivateFreightCompanyAsync(int id)
         {
             try
@@ -124,6 +131,8 @@ namespace API_PRIMECRM.Controllers.Masters
                 });
             }
         }
+
+        [HttpPatch("activate/{id}")]
         public async Task<IActionResult> ActivateFreightCompanyAsync(int id)
         {
             try

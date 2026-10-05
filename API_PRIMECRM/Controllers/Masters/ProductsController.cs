@@ -16,6 +16,7 @@ namespace API_PRIMECRM.Controllers.Masters
             _productService = productService;
         }
 
+        [HttpGet]
         public async Task<IActionResult> GetAllProducts()
         {
             var products = await _productService.GetAllProductsAsync();
@@ -117,7 +118,7 @@ namespace API_PRIMECRM.Controllers.Masters
         }
 
         // DELETE: api/brands/5
-        [HttpDelete("{id}")]
+        [HttpDelete("desactivate/{id}")]
         public async Task<IActionResult> DeleteProduct(int id)
         {
             try
@@ -127,6 +128,34 @@ namespace API_PRIMECRM.Controllers.Masters
                 return Ok(new
                 {
                     message = "Producto eliminado correctamente."
+                });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new
+                {
+                    message = ex.Message
+                });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new
+                {
+                    message = ex.Message
+                });
+            }
+        }
+
+        [HttpPatch("activate/{id}")]
+        public async Task<IActionResult> ActivateProduct(int id)
+        {
+            try
+            {
+                await _productService.ActivateProductAsync(id);
+
+                return Ok(new
+                {
+                    message = "Producto activado correctamente."
                 });
             }
             catch (ArgumentException ex)
