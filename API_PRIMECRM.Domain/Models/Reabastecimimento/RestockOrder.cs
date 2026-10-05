@@ -23,6 +23,7 @@ namespace API_PRIMECRM.Domain.Models.Reabastecimimento
 
 
         //Total Paggado
+        [Column(TypeName = "decimal(18,2)")]
         public decimal Total {  get; set; }
 
         // Cantidad comprada
@@ -83,6 +84,7 @@ namespace API_PRIMECRM.Domain.Models.Reabastecimimento
         [Column(TypeName = "decimal(18,2)")]
         public decimal EstimatedTotalSV { get; set; }
 
+        [Column(TypeName = "decimal(18,2)")]
         public decimal? ActualTotalSV { get; set; } = 0.00m;
 
 

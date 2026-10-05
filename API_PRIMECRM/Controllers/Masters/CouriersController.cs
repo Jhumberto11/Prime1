@@ -17,12 +17,35 @@ namespace API_PRIMECRM.Controllers.Masters
         }
 
 
-        [HttpGet]
+        [HttpGet("all")]
         public async Task<IActionResult> GetAllCouriers()
         {
             var couriers = await _courierCompanyAdminService.GetAllCourierCompanyAsync();
+            if (couriers == null || !couriers.Any())
+            {
+                return NotFound(new
+                {
+                    message = "No se encontraron compañías de transporte."
+                });
+            }
             return Ok(couriers);
         }
+
+        [HttpGet("all-actives")]
+        public async Task<IActionResult> GetActiveCouriers()
+        {
+            var couriers = await _courierCompanyAdminService.GetActiveCourierCompanyAsync();
+            if (couriers == null || !couriers.Any())
+            {
+                return NotFound(new
+                {
+                    message = "No se encontraron compañías de transporte activas."
+                });
+            }   
+            return Ok(couriers);
+        }
+
+
         [HttpGet("{id}")]
         public async Task<IActionResult> GetCourierById(int id)
         {
@@ -50,6 +73,14 @@ namespace API_PRIMECRM.Controllers.Masters
         [HttpPost]
         public async Task<IActionResult> CreateCourierAsync(CourierDto dto)
         {
+            if(ModelState.IsValid == false)
+            {
+                return BadRequest(new
+                {
+                    message = "El modelo proporcionado no es válido."
+                });
+            }
+
             CourierCompany newCourier = new CourierCompany
             {
                 Name = dto.Name,

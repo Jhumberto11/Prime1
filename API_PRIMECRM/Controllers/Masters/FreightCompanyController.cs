@@ -1,4 +1,5 @@
 ﻿using API_PRIMECRM.Application.Services.Master;
+using API_PRIMECRM.Domain.DTOs.Masters;
 using API_PRIMECRM.Domain.Models.Masters;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -48,8 +49,21 @@ namespace API_PRIMECRM.Controllers.Masters
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateFreightCompanyAsync(FreightCompany freightCompany)
+        public async Task<IActionResult> CreateFreightCompanyAsync(FreightCompanyDto dto)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            FreightCompany freightCompany = new FreightCompany
+            {
+                Name = dto.Name,
+                RatePerLB = dto.RatePerLB,
+                TaxPercentSV = dto.TaxPercentSV,
+                OtherCharges = dto.OtherCharges
+            };
+
             try
             {
                 var newFreightCompany = await _freightCompanyAdminService.AddFreightCompanyAsync(freightCompany);
@@ -72,21 +86,44 @@ namespace API_PRIMECRM.Controllers.Masters
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateFreightCompanyAsync(int id, FreightCompany freightCompany)
+        public async Task<IActionResult> UpdateFreightCompanyAsync(int id, FreightCompanyDto dto)
         {
+            if(id <= 0)
+            {
+                return BadRequest(new
+                {
+                    message = "El Id de la compañía de transporte debe ser mayor que cero."
+                });
+            }
+
+            var freightToUpdate = await _freightCompanyAdminService.GetFreightCompanyByIdAsync(id);
+            if (freightToUpdate == null)
+            {
+                return NotFound(new
+                {
+                    message = $"No existe una compañía de transporte con Id {id}."
+                });
+            }
+
             try
             {
-                if (id != freightCompany.Id)
+                if (id != freightToUpdate.Id)
                 {
                     return BadRequest(new
                     {
                         message = "El Id de la compañía de transporte no coincide con el Id proporcionado."
                     });
                 }
-                await _freightCompanyAdminService.UpdateFreightCompanyAsync(freightCompany);
+
+                freightToUpdate.Name = dto.Name;
+                freightToUpdate.RatePerLB = dto.RatePerLB;
+                freightToUpdate.TaxPercentSV = dto.TaxPercentSV;
+                freightToUpdate.OtherCharges = dto.OtherCharges;
+
+                await _freightCompanyAdminService.UpdateFreightCompanyAsync(freightToUpdate);
                 return Ok(new
                 {
-                    message = "Compañía de transporte actualizada correctamente."
+                    message = $"Compañía de transporte {freightToUpdate.Name} actualizada correctamente."
                 });
             }
             catch (ArgumentException ex)

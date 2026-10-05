@@ -1,5 +1,6 @@
 ﻿using API_PRIMECRM.Domain.Interfaces;
 using API_PRIMECRM.Domain.Models.Masters;
+using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -9,10 +10,12 @@ namespace API_PRIMECRM.Application.Services.Master
     public class ProductService
     {
         private readonly IBaseRepository<Product> _productRepository;
+        private readonly IBaseRepository<Brand> _brandRepository;
 
-        public ProductService(IBaseRepository<Product> productRepository)
+        public ProductService(IBaseRepository<Product> productRepository, IBaseRepository<Brand> brandRepository)
         {
             _productRepository = productRepository;
+            _brandRepository = brandRepository;
         }
 
         public Task<IEnumerable<Product>> GetAllProductsAsync()
@@ -49,6 +52,13 @@ namespace API_PRIMECRM.Application.Services.Master
                     $"El producto '{product.Name}' ya existe."
                 );
             }
+
+            var brandExists = await _brandRepository.ExistsAsync(x => x.Id == product.BrandId);
+            if(!brandExists)
+            {
+                throw new KeyNotFoundException($"No existe una marca con Id {product.BrandId}.");
+            }
+            
             ValidateProduct(product);
             product.Name = product.Name.Trim();
             await _productRepository.AddAsync(product);
