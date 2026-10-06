@@ -226,7 +226,7 @@ namespace API_PRIMECRM.Application.Services.Restock_Orders
                     "Los cargos adicionales no pueden ser negativos.");
 
             var restockOrder =
-                await _restockOrderRepository.GetByIdAsync(id);
+                await _restockOrderRepository.GetByIdForUpdateAsync(id);
 
             if (restockOrder == null)
             {
@@ -340,7 +340,7 @@ namespace API_PRIMECRM.Application.Services.Restock_Orders
                  throw new KeyNotFoundException(
                      $"No se encontró una empresa de flete con el ID {dto.FreightCompanyId}.");
 
-             var restockOrder = await _restockOrderRepository.GetByIdAsync(id);
+             var restockOrder = await _restockOrderRepository.GetByIdForUpdateAsync(id);
              if (restockOrder == null)
                  throw new KeyNotFoundException(
                      $"No se encontró un pedido de reabastecimiento con el ID {id}.");

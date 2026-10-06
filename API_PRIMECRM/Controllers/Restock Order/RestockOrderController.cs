@@ -100,6 +100,10 @@ namespace API_PRIMECRM.Controllers.Restock_Order
             {
                 return BadRequest(ex.Message);
             }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
 
 
         }

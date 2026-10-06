@@ -10,6 +10,7 @@ namespace API_PRIMECRM.Domain.Interfaces.Restock
         Task<IEnumerable<RestockOrder>> GetAllAsync();
 
         Task<RestockOrder?> GetByIdAsync(int id);
+        Task<RestockOrder> GetByIdForUpdateAsync(int id);
 
         Task<IEnumerable<RestockOrder>> GetByProductIdAsync(int productId);
 
