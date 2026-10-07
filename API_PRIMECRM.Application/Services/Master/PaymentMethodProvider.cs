@@ -220,7 +220,7 @@ namespace API_PRIMECRM.Application.Services.Master
                 case PaymentMethodType.CreditCard:
                 case PaymentMethodType.DebitCard:
 
-                    ValidateBank(paymentMethod.BankName);
+                    ValidateBank(paymentMethod.BankName ?? BankName.SIN_BANCO);
 
                     if (string.IsNullOrWhiteSpace(paymentMethod.Last4))
                     {
@@ -240,7 +240,7 @@ namespace API_PRIMECRM.Application.Services.Master
 
                 case PaymentMethodType.BankAccount:
 
-                    ValidateBank(paymentMethod.BankName);
+                    ValidateBank(paymentMethod.BankName ?? BankName.SIN_BANCO);
 
                     if (!string.IsNullOrWhiteSpace(paymentMethod.Last4) &&
                         (paymentMethod.Last4.Length != 4 ||

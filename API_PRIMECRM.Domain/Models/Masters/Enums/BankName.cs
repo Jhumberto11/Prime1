@@ -11,6 +11,7 @@ namespace API_PRIMECRM.Domain.Models.Masters.Enums
         CUSCATLAN = 3,
         PROMERICA = 4,
         NIU = 5,
+        SIN_BANCO = 6,
 
     }
 }
