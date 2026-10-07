@@ -71,5 +71,17 @@ namespace API_PRIMECRM.Infraestructure.Persistence.Repositories.Restock_Order
             await _context.SaveChangesAsync();
             return restockOrder;
         }
+
+        public async Task<RestockOrder> GetByIdForUpdateAsync(int id)
+        {
+            var order = await _context.RestockOrders.FirstOrDefaultAsync(r => r.Id == id);
+
+            if (order == null)
+            {
+                throw new KeyNotFoundException($"Restock order with ID {id} not found.");
+            }
+
+            return order;
+        }
     }
 }

@@ -11,7 +11,7 @@ namespace API_PRIMECRM.Domain.Models.Masters
     {
         public PaymentMethodType Type { get; set; }
 
-        public BankName BankName { get; set; }
+        public BankName? BankName { get; set; }
 
         [MaxLength(4)]
         public string? Last4 { get; set; }

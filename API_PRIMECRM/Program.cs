@@ -29,6 +29,8 @@ builder.Services.AddScoped<BrandService>();
 builder.Services.AddScoped<ProductService>();
 builder.Services.AddScoped<CourierCompanyAdminService>();
 builder.Services.AddScoped<FreightCompanyAdminService>();
+builder.Services.AddScoped<SaleChannelProvider>();
+builder.Services.AddScoped<PaymentMethodProvider>();
 builder.Services.AddScoped<IRestockOrderService, RestockOrderService>();
 
 
