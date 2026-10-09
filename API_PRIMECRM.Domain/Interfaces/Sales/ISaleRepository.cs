@@ -6,13 +6,22 @@ public interface ISaleRepository
 {
     Task<IEnumerable<Sale>> GetAllAsync();
     Task<Sale?> GetByIdAsync(int id);
-    Task<Sale> GetByIdForUpdateAsync(int id);
-    Task<IEnumerable<Sale>> GetByCustomerIdAsync(int customerId);
+    Task<Sale?> GetByIdForUpdateAsync(int id);
+    Task<IEnumerable<Sale>>GetByProductIdAsync(int productId);
     Task AddAsync(Sale sale);
-    Task<Sale?> UpdateAsync(Sale sale);
     Task<bool> ExistsAsync(int id);
-    Task<IEnumerable<Sale>> GetByDateRangeAsync(DateTime startDate, DateTime endDate);
-    
+    Task<IEnumerable<Sale>> GetByDateRangeAsync(DateTime from, DateTime to);
+
+    Task<IEnumerable<Sale>>GetByStatusAsync(SaleStatus status);
+
+    Task<IEnumerable<Sale>>GetDeliveredPendingSettlementByCourierAsync(int courierCompanyId);
+
+    //Se puede agregar : GetByTracking
+    //    GetByFundsLocalition
+    //    GetByCourier
+
+
+
 
 
 
