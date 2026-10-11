@@ -106,7 +106,30 @@ namespace PrimeCRM_Api.Infraestructure.Persistence
                     .WithMany(p => p.InventoryMovements)
                     .HasForeignKey(im => im.ProductID)
                     .OnDelete(DeleteBehavior.Restrict);
+
+                e.HasIndex(i => i.ProductID);
+
+                e.HasIndex(i => new
+                {
+                    i.ProductID,
+                    i.Date
+                });
+
+                e.HasIndex(i => new
+                {
+                    i.ProductID,
+                    i.SourceType,
+                    i.SourceId,
+                    i.Type
+                })
+                .IsUnique()
+                .HasFilter(
+                "[SourceId] IS NOT NULL AND [Type] IN (1, 2)");
+
+
             });
+
+
         }
 
         private void RestockConfigure(ModelBuilder modelBuilder)
@@ -153,6 +176,20 @@ namespace PrimeCRM_Api.Infraestructure.Persistence
                     .WithMany(sc => sc.Sales)
                     .HasForeignKey(s => s.SalesChannelId)
                     .OnDelete(DeleteBehavior.Restrict);
+
+                e.HasIndex(s => new
+                {
+                    s.ProductId,
+                    s.SaleDate
+                });
+
+                e.HasIndex(s => new
+                {
+                    s.CourierCompanyId,
+                    s.SaleStatus,
+                    s.SettlementStatus
+                });
+
             });
         }
 
