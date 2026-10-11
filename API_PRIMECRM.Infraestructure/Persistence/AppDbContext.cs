@@ -118,8 +118,6 @@ namespace PrimeCRM_Api.Infraestructure.Persistence
                 e.HasIndex(i => new
                 {
                     i.ProductID,
-                    i.SourceType,
-                    i.SourceId,
                     i.Type
                 })
                 .IsUnique()
@@ -153,6 +151,12 @@ namespace PrimeCRM_Api.Infraestructure.Persistence
                     .WithMany(pm => pm.RestockOrders)
                     .HasForeignKey(ro => ro.PaymentMethodId)
                     .OnDelete(DeleteBehavior.Restrict);
+
+                e.HasOne(ro => ro.InventoryMovement)
+                .WithOne(im => im.RestockOrder)
+                .HasForeignKey<RestockOrder>(ro => ro.InventoryMovementId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             });
         }
 

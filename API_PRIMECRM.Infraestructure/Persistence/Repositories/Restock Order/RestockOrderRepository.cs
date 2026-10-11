@@ -44,6 +44,7 @@ namespace API_PRIMECRM.Infraestructure.Persistence.Repositories.Restock_Order
                 .Include(r => r.Product)
                 .Include(r => r.FreightCompany)
                 .Include(r => r.PaymentMethod)
+                .Include(r => r.InventoryMovement)
                 .FirstOrDefaultAsync(r => r.Id == id);
         }
 
@@ -66,7 +67,6 @@ namespace API_PRIMECRM.Infraestructure.Persistence.Repositories.Restock_Order
 
         public async Task<RestockOrder?> UpdateAsync(RestockOrder restockOrder)
         {
-            _context.RestockOrders.Update(restockOrder);
 
             await _context.SaveChangesAsync();
             return restockOrder;
@@ -74,7 +74,9 @@ namespace API_PRIMECRM.Infraestructure.Persistence.Repositories.Restock_Order
 
         public async Task<RestockOrder> GetByIdForUpdateAsync(int id)
         {
-            var order = await _context.RestockOrders.FirstOrDefaultAsync(r => r.Id == id);
+            var order = await _context.RestockOrders
+                .Include(r => r.InventoryMovement)
+                .FirstOrDefaultAsync(r => r.Id == id);
 
             if (order == null)
             {

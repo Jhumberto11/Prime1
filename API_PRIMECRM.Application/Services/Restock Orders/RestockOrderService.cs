@@ -1,14 +1,18 @@
 ﻿using API_PRIMECRM.Domain.DTOs.Restock;
 using API_PRIMECRM.Domain.Interfaces;
+using API_PRIMECRM.Domain.Interfaces.Inventory;
 using API_PRIMECRM.Domain.Interfaces.Master_Interfaces;
 using API_PRIMECRM.Domain.Interfaces.Restock;
 using API_PRIMECRM.Domain.Interfaces.Services;
+using API_PRIMECRM.Domain.Models.Inventario;
+using API_PRIMECRM.Domain.Models.Inventario.Enums;
 using API_PRIMECRM.Domain.Models.Masters;
 using API_PRIMECRM.Domain.Models.Reabastecimimento;
 using API_PRIMECRM.Domain.Models.Reabastecimimento.Enums;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Data;
 using System.Text;
 
 namespace API_PRIMECRM.Application.Services.Restock_Orders
@@ -19,16 +23,19 @@ namespace API_PRIMECRM.Application.Services.Restock_Orders
         private readonly IBaseRepository<FreightCompany> _freightCompanyRepository;
         private readonly IRestockRepository _restockOrderRepository;
         private readonly IBaseRepository<PaymentMethod> _paymentMethodRepository;
+        private readonly IInventoryRepository _inventoryMovements;
 
         public RestockOrderService(IBaseRepository<Product> productRepository,
             IBaseRepository<FreightCompany> freightCompanyRepository,
             IRestockRepository restockOrderRepository,
-            IBaseRepository<PaymentMethod> paymentMethodRepository)
+            IBaseRepository<PaymentMethod> paymentMethodRepository,
+            IInventoryRepository inventoryMovements)
         {
             _productRepository = productRepository;
             _freightCompanyRepository = freightCompanyRepository;
             _restockOrderRepository = restockOrderRepository;
             _paymentMethodRepository = paymentMethodRepository;
+            _inventoryMovements = inventoryMovements;
         }
 
         public async Task<RestockOrder> CreateAsync(CreateRestockOrderDto dto)
@@ -162,6 +169,33 @@ namespace API_PRIMECRM.Application.Services.Restock_Orders
                 Notes = dto.Notes
             };
 
+            // -------------------------
+            // CREAR MOVIMIENTO INVENTARIO
+            // -------------------------
+
+            var newInventoryMovement = new InventoryMovement
+            {
+                ProductID = restockOrder.ProductId,
+
+                Date = DateOnly.FromDateTime(
+                    restockOrder.OrderDate),
+
+                Type = InventoryMovementType.RestockIn,
+
+                OrderStatus = OrderStatus.InTransit,
+
+                Quantity = restockOrder.Quantity,
+
+                UnitCost = restockOrder.EstimatedLandedUnitCost
+            };
+
+            // -------------------------
+            // ASOCIAR MOVIMIENTO A RESTOCK
+            // -------------------------
+
+
+            restockOrder.InventoryMovement = newInventoryMovement;
+
 
             await _restockOrderRepository
                 .AddAsync(restockOrder);
@@ -174,6 +208,13 @@ namespace API_PRIMECRM.Application.Services.Restock_Orders
             return await _restockOrderRepository.GetAllAsync();
         }
 
+        /// <summary>
+        /// Regresa Reabastecimento por ID
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
+        /// <exception cref="KeyNotFoundException"></exception>
         public async Task<RestockOrder?> GetByIdAsync(int id)
         {
             if (id <= 0)
@@ -190,6 +231,14 @@ namespace API_PRIMECRM.Application.Services.Restock_Orders
             return result;
         }
 
+
+        /// <summary>
+        /// Regresa lista de reabastecimentos por producto
+        /// </summary>
+        /// <param name="productId"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
+        /// <exception cref="KeyNotFoundException"></exception>
         public Task<IEnumerable<RestockOrder>> GetByProductIdAsync(int productId)
         {
             if (productId <= 0)
@@ -257,6 +306,133 @@ namespace API_PRIMECRM.Application.Services.Restock_Orders
         }
 
 
+
+        public async Task<RestockOrder?> UpdateAsync(int id, UpdateRestockOrderDto dto)
+        {
+            if (id <= 0)
+                throw new ArgumentException(
+                    "El ID del Restock debe ser mayor que cero.");
+
+
+            // VALIDAR PRODUCTO
+            var product = await _productRepository.GetByIdAsync(dto.ProductId);
+
+             if(product == null)
+                 throw new KeyNotFoundException(
+                     $"No se encontró un producto con el ID {dto.ProductId}.");
+
+            // VALIDAR EMPRESA DE FLETE
+            var freightCompany = await _freightCompanyRepository.GetByIdAsync(dto.FreightCompanyId);
+
+             if(freightCompany == null)
+                 throw new KeyNotFoundException(
+                     $"No se encontró una empresa de flete con el ID {dto.FreightCompanyId}.");
+
+            // VALIDAR MÉTODO DE PAGO
+            var paymentMethod = await _paymentMethodRepository
+                .GetByIdAsync(dto.PaymentMethodId);
+
+            if (paymentMethod == null)
+                throw new KeyNotFoundException(
+                    "El método de pago no existe.");
+
+            //Validaciones DTO
+            if (dto.Quantity <= 0)
+                throw new ArgumentException(
+                    "La cantidad debe ser mayor que cero.");
+
+            if (dto.Total <= 0)
+                throw new ArgumentException(
+                    "El total debe ser mayor que cero.");
+
+            if (dto.EstimatedPounds <= 0)
+                throw new ArgumentException(
+                    "El peso estimado debe ser mayor que cero.");
+
+
+
+            var restockOrder = await _restockOrderRepository.GetByIdForUpdateAsync(id);
+
+
+             if (restockOrder == null)
+                 throw new KeyNotFoundException(
+                     $"No se encontró un pedido de reabastecimiento con el ID {id}.");
+
+
+
+            // CALCULAR COSTOS
+            decimal estimatedFreight =
+                CalculateEstimatedFreight(
+                    freightCompany,
+                    dto.EstimatedPounds);
+
+            decimal estimatedTaxes =
+                CalculateEstimatedTaxes(
+                    freightCompany,
+                    dto.Total);
+
+            decimal landedUnitCost =
+                CalculateEstimatedLandedUnitCost(
+                    dto.Total,
+                    estimatedFreight,
+                    estimatedTaxes,
+                    dto.Quantity);
+
+            decimal estimatedTotalSV =
+                CalculateTotalSV(
+                    dto.Total,
+                    estimatedFreight,
+                    estimatedTaxes,
+                    0m);
+
+
+            // ACTUALIZAR RESTOCK
+            restockOrder.OrderDate = dto.OrderDate;
+            restockOrder.ProductId = dto.ProductId;
+            restockOrder.FreightCompanyId = dto.FreightCompanyId;
+            restockOrder.PaymentMethodId = dto.PaymentMethodId;
+            restockOrder.Total = dto.Total;
+            restockOrder.EstimatedPounds = dto.EstimatedPounds;
+            restockOrder.Quantity = dto.Quantity;
+            restockOrder.Notes = dto.Notes;
+
+            restockOrder.EstimatedFreight = estimatedFreight;
+            restockOrder.EstimatedTaxes = estimatedTaxes;
+
+            restockOrder.EstimatedTotalFreightAndTaxes =
+                estimatedFreight + estimatedTaxes;
+
+            restockOrder.EstimatedLandedUnitCost =
+                landedUnitCost;
+
+            restockOrder.EstimatedTotalSV =
+                estimatedTotalSV;
+
+
+            // ACTUALIZAR MOVIMIENTO DE INVENTARIO
+            var inventoryMovement =
+                restockOrder.InventoryMovement
+                ?? throw new InvalidOperationException(
+                    "El reabastecimiento no tiene un movimiento asociado.");
+
+            inventoryMovement.ProductID =
+                restockOrder.ProductId;
+
+            inventoryMovement.Date =
+                DateOnly.FromDateTime(restockOrder.OrderDate);
+
+            inventoryMovement.Quantity =
+                restockOrder.Quantity;
+
+            inventoryMovement.UnitCost =
+                restockOrder.EstimatedLandedUnitCost;
+
+
+            return await _restockOrderRepository.UpdateAsync(restockOrder);
+
+            
+            
+        }
         /// <summary>
         /// Calcula el flete estimado basado en la empresa de flete y el peso en libras
         /// </summary>
@@ -323,56 +499,116 @@ namespace API_PRIMECRM.Application.Services.Restock_Orders
                 + (otherCharges ?? 0.00m);
         }
 
-        public async Task<RestockOrder?> UpdateAsync(int id, UpdateRestockOrderDto dto)
+
+        /// <summary>
+        /// Cambia estado del pedido a entregado
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="delivered"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
+        /// <exception cref="KeyNotFoundException"></exception>
+        /// <exception cref="InvalidOperationException"></exception>
+        public async Task<RestockOrder?> ChangeStatusDeliverded(int id, bool delivered)
         {
+
+            // VALIDAR ID
             if (id <= 0)
                 throw new ArgumentException(
-                    "El ID debe ser mayor que cero.");
-            
-             var product = await _productRepository.GetByIdAsync(dto.ProductId);
-             var freightCompany = await _freightCompanyRepository.GetByIdAsync(dto.FreightCompanyId);
+                    "El ID del Restock debe ser mayor que cero.");
 
-             if(product == null)
-                 throw new KeyNotFoundException(
-                     $"No se encontró un producto con el ID {dto.ProductId}.");
+            // BUSCAR ORDEN
+            var orderDetail = await _restockOrderRepository
+                .GetByIdForUpdateAsync(id);
 
-             if(freightCompany == null)
-                 throw new KeyNotFoundException(
-                     $"No se encontró una empresa de flete con el ID {dto.FreightCompanyId}.");
+            if (orderDetail == null)
+                throw new KeyNotFoundException(
+                    $"Orden con ID {id} no encontrada.");
 
-             var restockOrder = await _restockOrderRepository.GetByIdForUpdateAsync(id);
-             if (restockOrder == null)
-                 throw new KeyNotFoundException(
-                     $"No se encontró un pedido de reabastecimiento con el ID {id}.");
-             restockOrder.OrderDate = dto.OrderDate;
-             restockOrder.ProductId = dto.ProductId;
-             restockOrder.FreightCompanyId = dto.FreightCompanyId;
-             restockOrder.Total = dto.Total;
-             restockOrder.EstimatedPounds = dto.EstimatedPounds;
-             restockOrder.Quantity = dto.Quantity;
-             restockOrder.PaymentMethodId = dto.PaymentMethodId;
-             restockOrder.Notes = dto.Notes;
+            // VALIDAR ESTADO ACTUAL
+            if (orderDetail.PackageStatus != PackageStatus.InTransit)
+                throw new InvalidOperationException(
+                    $"No se puede cambiar el estado de una orden " +
+                    $"que ya está en {orderDetail.PackageStatus}.");
 
-             restockOrder.EstimatedFreight = CalculateEstimatedFreight(
-                 await _freightCompanyRepository.GetByIdAsync(dto.FreightCompanyId),
-                 dto.EstimatedPounds);
+            // VALIDAR MOVIMIENTO DE INVENTARIO
+            var inventoryMovement = orderDetail.InventoryMovement;
 
-             restockOrder.EstimatedTaxes = CalculateEstimatedTaxes(
-                 await _freightCompanyRepository.GetByIdAsync(dto.FreightCompanyId),
-                 dto.Total);
+            if (inventoryMovement == null)
+                throw new InvalidOperationException(
+                    "La orden no tiene un movimiento de inventario asociado.");
 
-             restockOrder.EstimatedTotalFreightAndTaxes = restockOrder.EstimatedFreight + restockOrder.EstimatedTaxes;
+            // CAMBIAR ESTADO SEGÚN RESULTADO
+            if (delivered)
+            {
+                orderDetail.PackageStatus = PackageStatus.Delivered;
+                inventoryMovement.OrderStatus = OrderStatus.Delivered;
+            }
+            else
+            {
+                orderDetail.PackageStatus = PackageStatus.Lossed;
+                inventoryMovement.OrderStatus = OrderStatus.Lossed;
+            }
 
-             restockOrder.EstimatedLandedUnitCost = CalculateEstimatedLandedUnitCost(
-                 dto.Total,
-                 restockOrder.EstimatedFreight,
-                 restockOrder.EstimatedTaxes,
-                 dto.Quantity);
+            // GUARDAR AMBOS CAMBIOS
+            await _restockOrderRepository.UpdateAsync(orderDetail);
 
-             return await _restockOrderRepository.UpdateAsync(restockOrder);
+            return orderDetail;
 
-            
-            
+
+        }
+
+        public Task<RestockOrder?> ChangeStatusPayments(int id, bool paid)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<RestockOrder?> RevertStatusDeliveryAsync(int id)
+        {
+            // VALIDAR ID
+            if (id <= 0)
+                throw new ArgumentException(
+                    "El ID del Restock debe ser mayor que cero.");
+
+            // OBTENER ORDEN Y MOVIMIENTO
+            var orderDetail = await _restockOrderRepository
+                .GetByIdForUpdateAsync(id);
+
+            if (orderDetail == null)
+                throw new KeyNotFoundException(
+                    $"No se encontró la orden con ID {id}.");
+
+            // VERIFICAR QUE ESTÉ ENTREGADA
+            if (orderDetail.PackageStatus != PackageStatus.Delivered)
+                throw new InvalidOperationException(
+                    "Solo se pueden revertir órdenes entregadas.");
+
+            // VERIFICAR MOVIMIENTO
+            var inventoryMovement = orderDetail.InventoryMovement;
+
+            if (inventoryMovement == null)
+                throw new InvalidOperationException(
+                    "La orden no tiene movimiento de inventario.");
+
+            if (inventoryMovement.OrderStatus != OrderStatus.Delivered)
+                throw new InvalidOperationException(
+                    "El movimiento no figura como entregado.");
+
+            // IMPORTANTE:
+            // Antes de revertir, comprobar que las unidades
+            // no estén comprometidas por ventas o reservas.
+            // Esta validación debe implementarse según
+            // cómo calcules y almacenes el stock.
+
+            // REVERTIR ESTADOS
+            orderDetail.PackageStatus = PackageStatus.InTransit;
+
+            inventoryMovement.OrderStatus = OrderStatus.InTransit;
+
+            // GUARDAR CAMBIOS
+            await _restockOrderRepository.UpdateAsync(orderDetail);
+
+            return orderDetail;
         }
     }
 }

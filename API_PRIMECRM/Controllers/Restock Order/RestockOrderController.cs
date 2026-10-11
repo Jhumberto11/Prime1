@@ -107,5 +107,50 @@ namespace API_PRIMECRM.Controllers.Restock_Order
 
 
         }
+        [HttpPatch("/delivered/{id}")]
+        public async Task<IActionResult> MarkAsDelivered(int id)
+        {
+            
+            try
+            {
+                var order = await _restockOrderService.ChangeStatusDeliverded(id, true);
+                if (order == null)
+                    return NotFound();
+                return Ok(order);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+
+
+        }
+        [HttpPatch("/revert-delivered/{id}")]
+        public async Task<IActionResult> RevertDelivered(int id)
+        {
+           
+            try
+            {
+                var order = await _restockOrderService.RevertStatusDeliveryAsync(id);
+
+                if (order == null)
+                    return NotFound();
+                return Ok(order);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+
+
+        }
     }
 }
