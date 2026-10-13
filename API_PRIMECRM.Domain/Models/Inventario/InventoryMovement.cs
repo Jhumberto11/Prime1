@@ -30,7 +30,7 @@ namespace API_PRIMECRM.Domain.Models.Inventario
 
         // Navigation Property
 
-        public OrderStatus OrderStatus = OrderStatus.InTransit;
+        public OrderStatus OrderStatus { get; set } = OrderStatus.InTransit;
 
         public int RestockOrderId { get; set; }
         public RestockOrder? RestockOrder { get; set; }

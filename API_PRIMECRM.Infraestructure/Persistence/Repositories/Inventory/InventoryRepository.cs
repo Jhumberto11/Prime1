@@ -1,4 +1,5 @@
-﻿using API_PRIMECRM.Domain.Interfaces.Inventory;
+﻿using API_PRIMECRM.Domain.DTOs.Inventory;
+using API_PRIMECRM.Domain.Interfaces.Inventory;
 using API_PRIMECRM.Domain.Models.Inventario;
 using API_PRIMECRM.Domain.Models.Inventario.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -29,8 +30,7 @@ namespace API_PRIMECRM.Infraestructure.Persistence.Repositories.Inventory
                .AsNoTracking()
                .AnyAsync(x =>
                    x.ProductID == productId &&
-                   x.SourceType == sourceType &&
-                   x.SourceId == sourceId &&
+                   
                    x.Type == movementType);
         }
 
@@ -63,12 +63,12 @@ namespace API_PRIMECRM.Infraestructure.Persistence.Repositories.Inventory
 
         }
 
-        public async Task<IEnumerable<InventoryMovement>> GetBySourceAsync(InventorySourceType sourceType)
+        public async Task<IEnumerable<InventoryMovement>> GetBySourceAsync(InventoryMovementType sourceType)
         {
             return await _context.InventoryMovements
                 .AsNoTracking()
                 .Include(x => x.Product)
-                .Where(x => x.SourceType == sourceType)
+                .Where(x => x.Type == sourceType)
                 .OrderByDescending(x => x.Date)
                 .ThenByDescending(x => x.Id)
                 .ToListAsync();
@@ -110,7 +110,43 @@ namespace API_PRIMECRM.Infraestructure.Persistence.Repositories.Inventory
                 MidpointRounding.AwayFromZero);
         }
 
-       
+
+        /// <summary>
+        /// Inventario Total
+        /// </summary>
+        /// <returns></returns>
+        public async Task<List<ActualInventoryDto>> GetInventorySummaryAsync()
+        {
+            return await _context.InventoryMovements
+                .AsNoTracking()
+                .GroupBy(m => new
+                {
+                    m.ProductID,
+                    m.Product.Name
+                })
+                .Select(g => new ActualInventoryDto
+                {
+                    ProductId = g.Key.ProductID,
+                    ProductName = g.Key.Name,
+
+                    TotalEntries = g.Sum(m =>
+                        m.Type == InventoryMovementType.AdjustmentIn || m.Type == InventoryMovementType.InitialStock || m.Type == InventoryMovementType.RestockIn || m.Type == InventoryMovementType.SaleReturn
+                            ? m.Quantity : 0),
+
+                    TotalExits = g.Sum(m =>
+                        m.Type == InventoryMovementType.SaleOut || m.Type == InventoryMovementType.AdjustmentOut
+                            ? m.Quantity : 0),
+
+                    ActualStock = g.Sum(m =>
+                        m.Type == InventoryMovementType.Entry
+                            ? m.Quantity : -m.Quantity),
+
+                    LastMovementDate = g.Max(m => m.Date)
+                })
+                .ToListAsync();
+        }
+
+
 
         public async Task<int> GetCurrentStockAsync(int productId)
         {
@@ -172,6 +208,7 @@ namespace API_PRIMECRM.Infraestructure.Persistence.Repositories.Inventory
             return summary ?? new InventorySummary();
         }
 
+        
 
         private sealed class InventorySummary
         {

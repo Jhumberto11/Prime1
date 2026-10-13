@@ -115,15 +115,8 @@ namespace PrimeCRM_Api.Infraestructure.Persistence
                     i.Date
                 });
 
-                e.HasIndex(i => new
-                {
-                    i.ProductID,
-                    i.Type
-                })
-                .IsUnique()
-                .HasFilter(
-                "[SourceId] IS NOT NULL AND [Type] IN (1, 2)");
-
+                
+              
 
             });
 

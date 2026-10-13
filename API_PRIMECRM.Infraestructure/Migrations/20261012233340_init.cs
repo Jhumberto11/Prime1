@@ -33,7 +33,7 @@ namespace API_PRIMECRM.Infraestructure.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     DeliveryRate = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     CashHandlingType = table.Column<int>(type: "int", nullable: false),
-                    CashHandlingValue = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    CashHandlingValue = table.Column<decimal>(type: "decimal(18,4)", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     IsActive = table.Column<bool>(type: "bit", nullable: false)
                 },
@@ -63,7 +63,7 @@ namespace API_PRIMECRM.Infraestructure.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     RatePerLB = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    TaxPercentSV = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    TaxPercentSV = table.Column<decimal>(type: "decimal(18,4)", nullable: false),
                     OtherCharges = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     IsActive = table.Column<bool>(type: "bit", nullable: false)
@@ -110,7 +110,7 @@ namespace API_PRIMECRM.Infraestructure.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Type = table.Column<int>(type: "int", nullable: false),
-                    BankName = table.Column<int>(type: "int", nullable: false),
+                    BankName = table.Column<int>(type: "int", nullable: true),
                     Last4 = table.Column<string>(type: "nvarchar(4)", maxLength: 4, nullable: true),
                     Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     IsActive = table.Column<bool>(type: "bit", nullable: false)
@@ -166,9 +166,8 @@ namespace API_PRIMECRM.Infraestructure.Migrations
                     Type = table.Column<int>(type: "int", nullable: false),
                     Quantity = table.Column<int>(type: "int", nullable: false),
                     UnitCost = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    SourceType = table.Column<int>(type: "int", nullable: false),
-                    SourceId = table.Column<int>(type: "int", nullable: true),
-                    Notes = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true)
+                    Notes = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    RestockOrderId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -176,51 +175,6 @@ namespace API_PRIMECRM.Infraestructure.Migrations
                     table.ForeignKey(
                         name: "FK_InventoryMovements_Products_ProductID",
                         column: x => x.ProductID,
-                        principalTable: "Products",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "RestockOrders",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    OrderDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ProductId = table.Column<int>(type: "int", nullable: false),
-                    Total = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    Quantity = table.Column<int>(type: "int", nullable: false),
-                    FreightCompanyId = table.Column<int>(type: "int", nullable: false),
-                    PaymentMethodId = table.Column<int>(type: "int", nullable: false),
-                    EstimatedPounds = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    EstimatedFreight = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    ActualFreight = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
-                    EstimatedTaxes = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    OtherCharges = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    LandedUnitCost = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
-                    PaymentStatus = table.Column<int>(type: "int", nullable: false),
-                    PackageStatus = table.Column<int>(type: "int", nullable: false),
-                    Notes = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_RestockOrders", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_RestockOrders_FreightCompanies_FreightCompanyId",
-                        column: x => x.FreightCompanyId,
-                        principalTable: "FreightCompanies",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_RestockOrders_PaymentMethods_PaymentMethodId",
-                        column: x => x.PaymentMethodId,
-                        principalTable: "PaymentMethods",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_RestockOrders_Products_ProductId",
-                        column: x => x.ProductId,
                         principalTable: "Products",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
@@ -274,6 +228,62 @@ namespace API_PRIMECRM.Infraestructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "RestockOrders",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    OrderDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ProductId = table.Column<int>(type: "int", nullable: false),
+                    Total = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Quantity = table.Column<int>(type: "int", nullable: false),
+                    FreightCompanyId = table.Column<int>(type: "int", nullable: false),
+                    PaymentMethodId = table.Column<int>(type: "int", nullable: false),
+                    EstimatedPounds = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    EstimatedFreight = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    ActualFreight = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    EstimatedTotalFreightAndTaxes = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    EstimatedTaxes = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    OtherCharges = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    EstimatedLandedUnitCost = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    ActualLandedUnitCost = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    EstimatedTotalSV = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    ActualTotalSV = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    PaymentStatus = table.Column<int>(type: "int", nullable: false),
+                    PackageStatus = table.Column<int>(type: "int", nullable: false),
+                    Notes = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    InventoryMovementId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RestockOrders", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_RestockOrders_FreightCompanies_FreightCompanyId",
+                        column: x => x.FreightCompanyId,
+                        principalTable: "FreightCompanies",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_RestockOrders_InventoryMovements_InventoryMovementId",
+                        column: x => x.InventoryMovementId,
+                        principalTable: "InventoryMovements",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_RestockOrders_PaymentMethods_PaymentMethodId",
+                        column: x => x.PaymentMethodId,
+                        principalTable: "PaymentMethods",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_RestockOrders_Products_ProductId",
+                        column: x => x.ProductId,
+                        principalTable: "Products",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "LiquidationItems",
                 columns: table => new
                 {
@@ -306,9 +316,44 @@ namespace API_PRIMECRM.Infraestructure.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_Brands_Name",
+                table: "Brands",
+                column: "Name",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CourierCompanies_Name",
+                table: "CourierCompanies",
+                column: "Name",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ExpenseCategories_Name",
+                table: "ExpenseCategories",
+                column: "Name",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_FreightCompanies_Name",
+                table: "FreightCompanies",
+                column: "Name",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_IncomeCategories_Name",
+                table: "IncomeCategories",
+                column: "Name",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_InventoryMovements_ProductID",
                 table: "InventoryMovements",
                 column: "ProductID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_InventoryMovements_ProductID_Date",
+                table: "InventoryMovements",
+                columns: new[] { "ProductID", "Date" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_LiquidationItems_LiquidationId",
@@ -322,14 +367,32 @@ namespace API_PRIMECRM.Infraestructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_PaymentMethods_Name",
+                table: "PaymentMethods",
+                column: "Name",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Products_BrandId",
                 table: "Products",
                 column: "BrandId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Products_Name",
+                table: "Products",
+                column: "Name",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_RestockOrders_FreightCompanyId",
                 table: "RestockOrders",
                 column: "FreightCompanyId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RestockOrders_InventoryMovementId",
+                table: "RestockOrders",
+                column: "InventoryMovementId",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_RestockOrders_PaymentMethodId",
@@ -342,19 +405,25 @@ namespace API_PRIMECRM.Infraestructure.Migrations
                 column: "ProductId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Sales_CourierCompanyId",
+                name: "IX_Sales_CourierCompanyId_SaleStatus_SettlementStatus",
                 table: "Sales",
-                column: "CourierCompanyId");
+                columns: new[] { "CourierCompanyId", "SaleStatus", "SettlementStatus" });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Sales_ProductId",
+                name: "IX_Sales_ProductId_SaleDate",
                 table: "Sales",
-                column: "ProductId");
+                columns: new[] { "ProductId", "SaleDate" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Sales_SalesChannelId",
                 table: "Sales",
                 column: "SalesChannelId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SalesChannels_Name",
+                table: "SalesChannels",
+                column: "Name",
+                unique: true);
         }
 
         /// <inheritdoc />
@@ -365,9 +434,6 @@ namespace API_PRIMECRM.Infraestructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "IncomeCategories");
-
-            migrationBuilder.DropTable(
-                name: "InventoryMovements");
 
             migrationBuilder.DropTable(
                 name: "LiquidationItems");
@@ -385,16 +451,19 @@ namespace API_PRIMECRM.Infraestructure.Migrations
                 name: "FreightCompanies");
 
             migrationBuilder.DropTable(
+                name: "InventoryMovements");
+
+            migrationBuilder.DropTable(
                 name: "PaymentMethods");
 
             migrationBuilder.DropTable(
                 name: "CourierCompanies");
 
             migrationBuilder.DropTable(
-                name: "Products");
+                name: "SalesChannels");
 
             migrationBuilder.DropTable(
-                name: "SalesChannels");
+                name: "Products");
 
             migrationBuilder.DropTable(
                 name: "Brands");
