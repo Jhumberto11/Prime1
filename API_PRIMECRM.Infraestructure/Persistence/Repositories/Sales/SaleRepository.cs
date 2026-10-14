@@ -28,12 +28,17 @@ namespace API_PRIMECRM.Infraestructure.Persistence.Repositories.Sales
                 .AnyAsync(x => x.Id == id);
         }
 
+        public async Task<bool> ExistProductAsync(int id)
+        {
+            return await _context.Products.AsNoTracking()
+                .AnyAsync(x => x.Id == id)
+        }
+
         // =========================
         // TODAS LAS VENTAS
         // =========================
 
-        public async Task<IEnumerable<Sale>>
-            GetAllAsync()
+        public async Task<IEnumerable<Sale>> GetAllAsync()
         {
             return await GetReadQuery()
                 .OrderByDescending(x => x.SaleDate)
@@ -74,7 +79,7 @@ namespace API_PRIMECRM.Infraestructure.Persistence.Repositories.Sales
         // VENTA PARA MODIFICAR
         // =========================
 
-        public async Task<Sale?>GetByIdForUpdateAsync(int id)
+        public async Task<Sale?> GetByIdForUpdateAsync(int id)
         {
             var sale = await _context.Sales.FirstOrDefaultAsync(x => x.Id == id);
             return sale;
@@ -137,13 +142,16 @@ namespace API_PRIMECRM.Infraestructure.Persistence.Repositories.Sales
                 .AsNoTracking()
 
                 .Include(x => x.Product)
+
                 .ThenInclude(x => x.Brand)
 
                 .Include(x => x.CourierCompany)
 
                 .Include(x => x.SalesChannel)
 
-                .Include(x => x.LiquidationItem);
+                .Include(x => x.LiquidationItem)
+
+                .Include(x => x.InventoryMovement);
         }
     }
 }

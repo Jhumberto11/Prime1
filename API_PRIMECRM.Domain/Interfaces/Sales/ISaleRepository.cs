@@ -15,6 +15,7 @@ public interface ISaleRepository
     Task<IEnumerable<Sale>>GetByStatusAsync(SaleStatus status);
 
     Task<IEnumerable<Sale>>GetDeliveredPendingSettlementByCourierAsync(int courierCompanyId);
+    Task<bool> ExistProductAsync(int id)
 
     //Se puede agregar : GetByTracking
     //    GetByFundsLocalition

@@ -7,7 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace API_PRIMECRM.Application.Services
+namespace API_PRIMECRM.Application.Services.InventoryMovements
 {
     public class InventoryMovementService : IInventoryMovementsService
     {

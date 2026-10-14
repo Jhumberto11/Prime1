@@ -1,4 +1,5 @@
-﻿using API_PRIMECRM.Domain.Models.Liquidaciones;
+﻿using API_PRIMECRM.Domain.Models.Inventario;
+using API_PRIMECRM.Domain.Models.Liquidaciones;
 using API_PRIMECRM.Domain.Models.Masters;
 using System;
 using System.Collections.Generic;
@@ -68,6 +69,10 @@ namespace API_PRIMECRM.Domain.Models.Ventas
         [MaxLength(100)]
         public string TrackingNumber { get; set; } = string.Empty;
         public LiquidationItem? LiquidationItem { get; set; } = null!;
+
+        public int InventoryMovementId { get; set; }
+        public InventoryMovement InventoryMovement { get; set; }
+
 
         
 

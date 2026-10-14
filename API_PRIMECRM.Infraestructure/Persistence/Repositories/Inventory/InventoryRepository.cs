@@ -84,31 +84,8 @@ namespace API_PRIMECRM.Infraestructure.Persistence.Repositories.Inventory
         // =========================
 
 
-        public async Task<decimal> GetCurrentInventoryValueAsync(int productId)
-        {
-            var summary = await GetInventorySummaryAsync(productId);
+       
 
-            return Math.Round(
-               summary.InventoryValue,
-               2,
-               MidpointRounding.AwayFromZero);
-        }
-
-        public async Task<decimal?> GetCurrentAverageUnitCostAsync(int productId)
-        {
-            var summary =
-                await GetInventorySummaryAsync(productId);
-
-            if (summary.Stock <= 0)
-            {
-                return null;
-            }
-
-            return Math.Round(
-                summary.InventoryValue / summary.Stock,
-                2,
-                MidpointRounding.AwayFromZero);
-        }
 
 
         /// <summary>
@@ -138,8 +115,15 @@ namespace API_PRIMECRM.Infraestructure.Persistence.Repositories.Inventory
                             ? m.Quantity : 0),
 
                     ActualStock = g.Sum(m =>
-                        m.Type == InventoryMovementType.Entry
-                            ? m.Quantity : -m.Quantity),
+                                        m.Type == InventoryMovementType.RestockIn ||
+                                        m.Type == InventoryMovementType.SaleReturn ||
+                                        m.Type == InventoryMovementType.AdjustmentIn ||
+                                        m.Type == InventoryMovementType.InitialStock
+                                            ? m.Quantity
+                                            : m.Type == InventoryMovementType.SaleOut ||
+                                              m.Type == InventoryMovementType.AdjustmentOut
+                                                ? -m.Quantity
+                                                : 0),
 
                     LastMovementDate = g.Max(m => m.Date)
                 })
@@ -148,12 +132,7 @@ namespace API_PRIMECRM.Infraestructure.Persistence.Repositories.Inventory
 
 
 
-        public async Task<int> GetCurrentStockAsync(int productId)
-        {
-            var summary = await GetInventorySummaryAsync(productId);
-            return summary.Stock;
-        }
-
+      
 
 
 
@@ -208,7 +187,55 @@ namespace API_PRIMECRM.Infraestructure.Persistence.Repositories.Inventory
             return summary ?? new InventorySummary();
         }
 
-        
+        public async Task<decimal?> GetCurrentAverageUnitCostAsync(int productId)
+        {
+            var summary = await GetInventorySummaryAsync(productId);
+
+            if (summary.Stock <= 0)
+            {
+                return null;
+            }
+
+            var today = DateOnly.FromDateTime(DateTime.Today);
+
+            int[] months = { 3, 6, 9, 12 };
+
+            foreach (var month in months)
+            {
+                var startDate = today.AddMonths(-month);
+
+                var costs = await _context.InventoryMovements
+                    .AsNoTracking()
+                    .Where(x =>
+                        x.ProductID == productId &&
+                        x.Type == InventoryMovementType.RestockIn &&
+                        x.Date >= startDate &&
+                        x.Date <= today &&
+                        x.Quantity > 0 &&
+                        x.UnitCost > 0)
+                    .GroupBy(x => x.ProductID)
+                    .Select(g => new
+                    {
+                        TotalQuantity = g.Sum(x => x.Quantity),
+
+                        TotalCost = g.Sum(x =>
+                            x.Quantity * x.UnitCost)
+                    })
+                    .FirstOrDefaultAsync();
+
+                if (costs != null && costs.TotalQuantity > 0)
+                {
+                    return Math.Round(
+                        costs.TotalCost / costs.TotalQuantity,
+                        2,
+                        MidpointRounding.AwayFromZero);
+                }
+            }
+
+            return null;
+        }
+
+
 
         private sealed class InventorySummary
         {

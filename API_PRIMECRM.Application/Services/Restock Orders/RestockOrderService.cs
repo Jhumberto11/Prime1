@@ -298,6 +298,13 @@ namespace API_PRIMECRM.Application.Services.Restock_Orders
                 restockOrder.EstimatedTaxes,
                 otherCharges);
 
+            restockOrder.EstimatedLandedUnitCost = CalculateLandedUnitCost(
+                restockOrder.Total,
+                restockOrder.ActualFreight ?? 0.00m,
+                otherCharges,
+                restockOrder.Quantity);
+
+
 
             await _restockOrderRepository
                 .UpdateAsync(restockOrder);

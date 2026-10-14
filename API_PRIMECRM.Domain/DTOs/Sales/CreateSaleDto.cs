@@ -41,7 +41,7 @@ namespace API_PRIMECRM.Domain.DTOs.Sales
         //    = FundsLocation.HeldByCourier;
 
         [MaxLength(500)]
-        public string? Notes { get; set; }
+        public string? Notes { get; set; } = "N / A";
 
         // Opcional para poder registrar ventas históricas.
         // Si viene null, el servicio usa DateTime.UtcNow.
