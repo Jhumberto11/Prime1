@@ -120,5 +120,7 @@ namespace API_PRIMECRM.Application.Services.InventoryMovements
 
             return inventory;
         }
+
+        
     }
 }
