@@ -16,62 +16,80 @@ namespace API_PRIMECRM.Application.Services.Sales
 {
     public class SaleService : ISaleService
     {
-        private readonly ISaleRepository _saleRepository
-        private readonly IInventoryRepository _inventoryRepository
-        private readonly IBaseRepository<CourierCompany> _courierRepository
+        private readonly ISaleRepository _saleRepository;
+        private readonly IInventoryRepository _inventoryRepository;
+        private readonly IBaseRepository<CourierCompany> _courierRepository;
         public SaleService(
             ISaleRepository saleRepository,
             IInventoryRepository inventoryRepository,
             IBaseRepository<CourierCompany> courierRepository
             )
         {
-            _courierRepository = courierRepository,
-            _saleRepository =  saleRepository,
-            _inventoryRepository = inventoryRepository
+            _courierRepository = courierRepository;
+            _saleRepository = saleRepository;
+            _inventoryRepository = inventoryRepository;
 
         }
 
-        public Task<Sale> CreateAsync(CreateSaleDto dto)
+        public async Task<Sale> CreateAsync(CreateSaleDto dto)
         {
 
             if(dto == null)
             {
-                throw new InvalidOperationException("Venta viene nula")
+                throw new InvalidOperationException("Venta viene nula");
             }
             if(dto.Quantity <= 0)
             {
-                throw new InvalidOperationException("Cantidad no puede ser menor o igual a 0")
+                throw new InvalidOperationException("Cantidad no puede ser menor o igual a 0");
 
             }
-            if (dto.SaleAmount < 0.00)
+            if (dto.SaleAmount < 0m)
             {
-                throw new InvalidOperationException("Monto no puede ser menor a $0.00")
+                throw new InvalidOperationException("Monto no puede ser menor a $0.00");
 
             }
-            var productExist = _saleRepository.ExistProductAsync(dto.ProductId)
-            if (!productExist)
+            var productExist = _saleRepository.ExistProductAsync(dto.ProductId);
+            if (!productExist.Result)
             {
 
-                throw new KeyNotFoundException($"Producto con ID : {dto.ProductId} no ha sido encontrado")
+                throw new KeyNotFoundException($"Producto con ID : {dto.ProductId} no ha sido encontrado");
             }
 
-            var unitCost = GetAverageCostProduct(dto.ProductId)
+            var unitCost = GetAverageCostProduct(dto.ProductId);
+            var courier = _courierRepository.GetByIdAsync(dto.CourierCompanyId).Result;
+            if(courier == null)
+            {
+                throw new KeyNotFoundException($"Courier con ID : {dto.CourierCompanyId} no ha sido encontrado");
+            }
+
+
+
+            var totalCostShipping = CalculateTotalShippingSale(courier.DeliveryRate, courier.CashHandlingValue,  dto.SaleAmount, dto.ShippingPaymentMode);
+
+
+            var profit = CalculateProfitProduct(totalCostShipping, dto.SaleAmount, unitCost);
+
 
             var newSale = new Sale()
             {
-             
+
                 ProductId = dto.ProductId,
-                 Department = dto.Department,
-                  Municipality = dto.Municipality,
-                   Quantity = dto.Quantity,
-                    SaleAmount = dto.SaleAmount,
-                     CourierCompanyId = dto.CourierCompanyId,
-                      SaleChannelId = dto.SalesChannelId,
-                       Notes = dto.Notes,
-                        TrackingNumber = dto.TrackingNumber,
-                         UnitCostAtSale = unitCost,
-                          
-            }
+                UnitCostAtSale = unitCost,
+                Department = dto.Department,
+                Municipality = dto.Municipality,
+                Quantity = dto.Quantity,
+                SaleAmount = dto.SaleAmount,
+                CourierCompanyId = dto.CourierCompanyId,
+                SalesChannelId = dto.SalesChannelId,
+                Notes = dto.Notes,
+                TrackingNumber = dto.TrackingNumber,
+                ShippingCost = totalCostShipping,
+                CashHandlingFee = (courier.CashHandlingValue * dto.SaleAmount),
+                Profit = profit,
+                ShippingPaymentMode = dto.ShippingPaymentMode,
+                SaleStatus = dto.SaleStatus,
+                FundsLocation = dto.FundsLocation
+            };
 
             var newMovementSale = new InventoryMovement()
             {
@@ -87,13 +105,15 @@ namespace API_PRIMECRM.Application.Services.Sales
 
                 Quantity = dto.Quantity,
 
-                UnitCost = 
+                UnitCost = unitCost
 
             };
 
-            newSale.InventoryMovement = newMovementSale
+            newSale.InventoryMovement = newMovementSale;
 
-            return _saleRepository.AddAsync()
+            await _saleRepository.AddAsync(newSale);
+
+            return newSale;
         }
 
         public Task<IEnumerable<Sale>> GetAllAsync()
@@ -103,7 +123,7 @@ namespace API_PRIMECRM.Application.Services.Sales
 
         public Task<IEnumerable<Sale>> GetByDateRangeAsync(DateTime from, DateTime to)
         {
-            return Ge
+            throw new NotImplementedException();
         }
 
         public Task<Sale> GetByIdAsync(int id)
@@ -143,13 +163,26 @@ namespace API_PRIMECRM.Application.Services.Sales
 
         private decimal GetAverageCostProduct(int id)
         {
-            return _inventoryRepository.GetCurrentAverageUnitCostAsync(id)
+            var averageCost = _inventoryRepository.GetCurrentAverageUnitCostAsync(id);
+
+            return averageCost.Result;
         }
 
-        private decimal GetTotalShippingSale(decimal costShipping , decimal cashHandi)
+        private decimal CalculateTotalShippingSale(decimal costShipping , decimal cashHandi, decimal montSale , ShippingPaymentMode modePayment)
         {
+            if(modePayment == ShippingPaymentMode.Cash)
+            {
+                return (costShipping + (cashHandi * montSale));
+            }
+            return costShipping;
+
+
             
-            
+        }
+
+        private decimal CalculateProfitProduct(decimal costShipping , decimal montSale, decimal unitCost)
+        {
+            return unitCost - montSale - costShipping;
         }
     }
 }

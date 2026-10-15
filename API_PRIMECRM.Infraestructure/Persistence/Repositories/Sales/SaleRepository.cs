@@ -31,7 +31,7 @@ namespace API_PRIMECRM.Infraestructure.Persistence.Repositories.Sales
         public async Task<bool> ExistProductAsync(int id)
         {
             return await _context.Products.AsNoTracking()
-                .AnyAsync(x => x.Id == id)
+                .AnyAsync(x => x.Id == id);
         }
 
         // =========================
@@ -123,7 +123,7 @@ namespace API_PRIMECRM.Infraestructure.Persistence.Repositories.Sales
                     x.CourierCompanyId == courierCompanyId &&
                     x.SaleStatus == SaleStatus.Delivered &&
                     x.SettlementStatus == SettlementStatus.Pending &&
-                    x.FundsLocation == FundsLocation.HeldByCourier)
+                    x.FundsLocation == FundsLocation.NoSettle)
                 .OrderBy(x => x.SaleDate)
                 .ThenBy(x => x.Id)
                 .ToListAsync();

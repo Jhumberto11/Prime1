@@ -6,6 +6,7 @@
         TransferToBAC = 2, //America Central
         TransferToBA = 3, //Agricola
 
-        PaymentLink = 4
+        PaymentLink = 4,
+        NotShipped = 5
     }
 }

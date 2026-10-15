@@ -187,13 +187,13 @@ namespace API_PRIMECRM.Infraestructure.Persistence.Repositories.Inventory
             return summary ?? new InventorySummary();
         }
 
-        public async Task<decimal?> GetCurrentAverageUnitCostAsync(int productId)
+        public async Task<decimal> GetCurrentAverageUnitCostAsync(int productId)
         {
             var summary = await GetInventorySummaryAsync(productId);
 
             if (summary.Stock <= 0)
             {
-                return null;
+                return 0;
             }
 
             var today = DateOnly.FromDateTime(DateTime.Today);
@@ -232,10 +232,18 @@ namespace API_PRIMECRM.Infraestructure.Persistence.Repositories.Inventory
                 }
             }
 
-            return null;
+            return 0;
         }
 
+        public Task<int> GetCurrentStockAsync(int productId)
+        {
+            throw new NotImplementedException();
+        }
 
+        public Task<decimal> GetCurrentInventoryValueAsync(int productId)
+        {
+            throw new NotImplementedException();
+        }
 
         private sealed class InventorySummary
         {

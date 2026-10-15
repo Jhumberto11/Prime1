@@ -34,11 +34,22 @@ namespace API_PRIMECRM.Domain.DTOs.Sales
         [Required]
         public int SalesChannelId { get; set; }
 
-        //public ShippingPaymentMode ShippingPaymentMode { get; set; }
-        //    = ShippingPaymentMode.DeductFromSettlement;
 
-        //public FundsLocation FundsLocation { get; set; }
-        //    = FundsLocation.HeldByCourier;
+        // Cómo se maneja el costo de envío con la empresa de encomiendas
+     
+        public ShippingPaymentMode ShippingPaymentMode { get; set; }
+            = ShippingPaymentMode.Cash;
+
+        // Estado general de la venta
+    
+        public SaleStatus SaleStatus { get; set; }
+            = SaleStatus.Pending;
+
+
+        // Dónde se encuentra actualmente el dinero
+
+        public FundsLocation FundsLocation { get; set; }
+            = FundsLocation.NoSettle;
 
         [MaxLength(500)]
         public string? Notes { get; set; } = "N / A";

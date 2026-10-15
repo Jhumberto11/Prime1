@@ -20,7 +20,7 @@ namespace API_PRIMECRM.Domain.Interfaces.Inventory
 
         Task<decimal> GetCurrentInventoryValueAsync(int productId);
 
-        Task<decimal?> GetCurrentAverageUnitCostAsync(int productId);
+        Task<decimal> GetCurrentAverageUnitCostAsync(int productId);
 
         Task<bool> ExistsMovementForSourceAsync(int productId, InventorySourceType sourceType, int sourceId, InventoryMovementType movementType);
 
