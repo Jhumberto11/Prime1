@@ -19,16 +19,19 @@ namespace API_PRIMECRM.Application.Services.Sales
         private readonly ISaleRepository _saleRepository;
         private readonly IInventoryRepository _inventoryRepository;
         private readonly IBaseRepository<CourierCompany> _courierRepository;
+        private readonly IUnitOfWork _unitOfWork;
+
         public SaleService(
             ISaleRepository saleRepository,
             IInventoryRepository inventoryRepository,
-            IBaseRepository<CourierCompany> courierRepository
+            IBaseRepository<CourierCompany> courierRepository,
+            IUnitOfWork unitOfWork
             )
         {
             _courierRepository = courierRepository;
             _saleRepository = saleRepository;
             _inventoryRepository = inventoryRepository;
-
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<Sale> CreateAsync(CreateSaleDto dto)
@@ -36,7 +39,7 @@ namespace API_PRIMECRM.Application.Services.Sales
 
             if(dto == null)
             {
-                throw new InvalidOperationException("Venta viene nula");
+                throw new ArgumentNullException(nameof(dto));
             }
             if(dto.Quantity <= 0)
             {
@@ -48,26 +51,46 @@ namespace API_PRIMECRM.Application.Services.Sales
                 throw new InvalidOperationException("Monto no puede ser menor a $0.00");
 
             }
-            var productExist = _saleRepository.ExistProductAsync(dto.ProductId);
-            if (!productExist.Result)
+            bool productExists =
+            await _saleRepository.ExistProductAsync(dto.ProductId);
+
+            if (!productExists)
             {
 
                 throw new KeyNotFoundException($"Producto con ID : {dto.ProductId} no ha sido encontrado");
             }
 
-            var unitCost = GetAverageCostProduct(dto.ProductId);
-            var courier = _courierRepository.GetByIdAsync(dto.CourierCompanyId).Result;
-            if(courier == null)
-            {
-                throw new KeyNotFoundException($"Courier con ID : {dto.CourierCompanyId} no ha sido encontrado");
-            }
+            var courier = await _courierRepository
+             .GetByIdAsync(dto.CourierCompanyId);
+
+            if (courier == null)
+                throw new KeyNotFoundException(
+                    $"Courier con ID {dto.CourierCompanyId} no encontrado.");
+
+            decimal unitCost = await _inventoryRepository
+                .GetCurrentAverageUnitCostAsync(dto.ProductId);
+
+            decimal cashHandlingFee = CalculateCashHandlingFee(
+                                        courier.CashHandlingValue,
+                                        dto.SaleAmount,
+                                        dto.ShippingPaymentMode);
+
+            decimal shippingCost = courier.DeliveryRate;
+
+            decimal profit = CalculateProfitProduct(
+            dto.SaleAmount,
+            unitCost,
+            dto.Quantity,
+            shippingCost,
+            cashHandlingFee);
+
 
 
 
             var totalCostShipping = CalculateTotalShippingSale(courier.DeliveryRate, courier.CashHandlingValue,  dto.SaleAmount, dto.ShippingPaymentMode);
 
 
-            var profit = CalculateProfitProduct(totalCostShipping, dto.SaleAmount, unitCost);
+          
 
 
             var newSale = new Sale()
@@ -83,8 +106,9 @@ namespace API_PRIMECRM.Application.Services.Sales
                 SalesChannelId = dto.SalesChannelId,
                 Notes = dto.Notes,
                 TrackingNumber = dto.TrackingNumber,
-                ShippingCost = totalCostShipping,
-                CashHandlingFee = (courier.CashHandlingValue * dto.SaleAmount),
+                ShippingCostRate = shippingCost,
+                CashHandlingFee = cashHandlingFee,
+                TotalShippingCost = totalCostShipping,
                 Profit = profit,
                 ShippingPaymentMode = dto.ShippingPaymentMode,
                 SaleStatus = dto.SaleStatus,
@@ -116,57 +140,103 @@ namespace API_PRIMECRM.Application.Services.Sales
             return newSale;
         }
 
+        // ==========================
+        // CONSULTAS
+        // ==========================
+
         public Task<IEnumerable<Sale>> GetAllAsync()
         {
             return _saleRepository.GetAllAsync();
         }
 
-        public Task<IEnumerable<Sale>> GetByDateRangeAsync(DateTime from, DateTime to)
+        public async Task<Sale> GetByIdAsync(int id)
         {
-            throw new NotImplementedException();
+            var sale = await _saleRepository.GetByIdAsync(id);
+
+            if (sale == null)
+                throw new KeyNotFoundException(
+                    $"Venta con ID {id} no encontrada.");
+
+            return sale;
         }
 
-        public Task<Sale> GetByIdAsync(int id)
+        public async Task<IEnumerable<Sale>> GetByProductIdAsync(
+            int productId)
         {
-            throw new NotImplementedException();
+            var sales = await _saleRepository.GetByProductIdAsync(productId);
+
+            return sales.ToList();
         }
 
-        public Task<IEnumerable<Sale>> GetByProductIdAsync(int productId)
+        public async Task<IEnumerable<Sale>> GetByStatusAsync(
+            SaleStatus status)
         {
-            throw new NotImplementedException();
+            var sales = await _saleRepository.GetAllAsync();
+
+            return sales
+                .Where(s => s.SaleStatus == status)
+                .ToList();
         }
 
-        public Task<IEnumerable<Sale>> GetByStatusAsync(SaleStatus status)
+        public async Task<IEnumerable<Sale>> GetByDateRangeAsync(
+            DateTime from,
+            DateTime to)
         {
-            throw new NotImplementedException();
+            if (from > to)
+                throw new ArgumentException(
+                    "La fecha inicial no puede superar la final.");
+
+            
+
+            var sales = await _saleRepository.GetByDateRangeAsync(from, to);
+
+            return sales.ToList();
         }
 
-        public Task MarkAsDeliveredAsync(int saleId)
+        // ==========================
+        // ESTADOS DE VENTA
+        // ==========================
+
+        public async Task MarkAsDeliveredAsync(int saleId)
         {
-            throw new NotImplementedException();
+            await ChangeStatusAsync(
+                saleId,
+                SaleStatus.Delivered);
         }
 
-        public Task MarkAsLostAsync(int saleId)
+        public async Task MarkAsLostAsync(int saleId)
         {
-            throw new NotImplementedException();
+            await ChangeStatusAsync(
+                saleId,
+                SaleStatus.Lost);
         }
 
-        public Task MarkAsNotDeliveredAsync(int saleId)
+        public async Task MarkAsNotDeliveredAsync(int saleId)
         {
-            throw new NotImplementedException();
+            await ChangeStatusAsync(
+                saleId,
+                SaleStatus.NotDelivered);
         }
 
-        public Task UpdateTrackingAsync(int saleId, string trackingNumber)
+        // ==========================
+        // ACTUALIZAR TRACKING
+        // ==========================
+
+        public async Task UpdateTrackingAsync(
+            int saleId,
+            string trackingNumber)
         {
-            throw new NotImplementedException();
+            if (string.IsNullOrWhiteSpace(trackingNumber))
+                throw new ArgumentException(
+                    "El número de tracking es obligatorio.");
+
+            var sale = await GetByIdAsync(saleId);
+
+            sale.TrackingNumber = trackingNumber.Trim();
+
+            await _unitOfWork.SaveChangesAsync();
         }
 
-        private decimal GetAverageCostProduct(int id)
-        {
-            var averageCost = _inventoryRepository.GetCurrentAverageUnitCostAsync(id);
-
-            return averageCost.Result;
-        }
 
         private decimal CalculateTotalShippingSale(decimal costShipping , decimal cashHandi, decimal montSale , ShippingPaymentMode modePayment)
         {
@@ -176,13 +246,70 @@ namespace API_PRIMECRM.Application.Services.Sales
             }
             return costShipping;
 
+        }
 
+
+
+
+
+        // ==========================
+        // MÉTODOS PRIVADOS
+        // ==========================
+
+        private async Task ChangeStatusAsync(
+            int saleId,
+            SaleStatus newStatus)
+        {
+           
+            var sale = await _saleRepository.GetByIdForUpdateAsync(saleId);
+            if(sale == null)
+            {
+                throw new KeyNotFoundException($"Venta con id {saleId} no econtrada");
+            }
+
+            sale.SaleStatus = newStatus;
+
+            if (newStatus == SaleStatus.Delivered)
+            {
+
+                sale.InventoryMovement.OrderStatus = OrderStatus.Delivered;
+            }
+            if (newStatus == SaleStatus.NotDelivered) 
+            {
+
+                sale.InventoryMovement.OrderStatus = OrderStatus.Delivered;
+                sale.InventoryMovement.Type = InventoryMovementType.SaleReturn;
+            }
+            
+
+            await _unitOfWork.SaveChangesAsync();
             
         }
 
-        private decimal CalculateProfitProduct(decimal costShipping , decimal montSale, decimal unitCost)
+        private static decimal CalculateCashHandlingFee(
+            decimal cashHandlingRate,
+            decimal saleAmount,
+            ShippingPaymentMode paymentMode)
         {
-            return unitCost - montSale - costShipping;
+            if (paymentMode == ShippingPaymentMode.Cash)
+                return cashHandlingRate * saleAmount;
+
+            return 0m;
+        }
+
+        private static decimal CalculateProfitProduct(
+            decimal saleAmount,
+            decimal unitCost,
+            int quantity,
+            decimal shippingCost,
+            decimal cashHandlingFee)
+        {
+            decimal totalProductCost = unitCost * quantity;
+
+            return saleAmount
+                - totalProductCost
+                - shippingCost
+                - cashHandlingFee;
         }
     }
 }

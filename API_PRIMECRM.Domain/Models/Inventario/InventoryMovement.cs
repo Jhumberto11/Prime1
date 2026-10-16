@@ -1,6 +1,7 @@
 ﻿using API_PRIMECRM.Domain.Models.Inventario.Enums;
 using API_PRIMECRM.Domain.Models.Masters;
 using API_PRIMECRM.Domain.Models.Reabastecimimento;
+using API_PRIMECRM.Domain.Models.Ventas;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -32,8 +33,11 @@ namespace API_PRIMECRM.Domain.Models.Inventario
 
         public OrderStatus OrderStatus { get; set; } = OrderStatus.InTransit;
 
-        public int RestockOrderId { get; set; }
+        public int? RestockOrderId { get; set; }
         public RestockOrder? RestockOrder { get; set; }
+
+        public int? SaleId { get; set; }
+        public Sale? Sale { get; set; }
 
         
 

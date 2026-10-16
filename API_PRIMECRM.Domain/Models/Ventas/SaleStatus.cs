@@ -5,6 +5,6 @@
         Pending = 0,
         Delivered = 1,
         NotDelivered = 2,
-        Losed = 3
+        Lost = 3
     }
 }

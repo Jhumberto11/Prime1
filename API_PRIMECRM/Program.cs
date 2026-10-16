@@ -1,5 +1,6 @@
 using API_PRIMECRM.Application.Services.Master;
 using API_PRIMECRM.Application.Services.Restock_Orders;
+using API_PRIMECRM.Application.Services.Sales;
 using API_PRIMECRM.Domain.Interfaces;
 using API_PRIMECRM.Domain.Interfaces.Inventory;
 using API_PRIMECRM.Domain.Interfaces.Restock;
@@ -43,6 +44,7 @@ builder.Services.AddScoped<FreightCompanyAdminService>();
 builder.Services.AddScoped<SaleChannelProvider>();
 builder.Services.AddScoped<PaymentMethodProvider>();
 builder.Services.AddScoped<IRestockOrderService, RestockOrderService>();
+builder.Services.AddScoped<ISaleService, SaleService>();
 
 
 

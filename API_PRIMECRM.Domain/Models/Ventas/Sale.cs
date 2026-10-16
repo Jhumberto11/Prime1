@@ -57,12 +57,16 @@ namespace API_PRIMECRM.Domain.Models.Ventas
 
         // Costo de envío al momento de la venta
         [Column(TypeName = "decimal(18,2)")]
-        public decimal ShippingCost { get; set; }
+        public decimal ShippingCostRate { get; set; }
+     
 
 
         // Comisión por manejo de efectivo
         [Column(TypeName = "decimal(18,2)")]
         public decimal CashHandlingFee { get; set; }
+        // Costo Total del envio
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal TotalShippingCost { get; set; }
 
 
         // Número de guía / tracking
@@ -107,6 +111,8 @@ namespace API_PRIMECRM.Domain.Models.Ventas
         public string? Notes { get; set; }
 
         public decimal Profit { get; set; } = 0m;
+
+        
 
 
  

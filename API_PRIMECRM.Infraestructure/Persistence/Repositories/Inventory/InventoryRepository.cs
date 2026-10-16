@@ -50,6 +50,12 @@ namespace API_PRIMECRM.Infraestructure.Persistence.Repositories.Inventory
                 .Include(x => x.Product)
                 .FirstOrDefaultAsync(x => x.Id == id);
         }
+        public async Task<InventoryMovement?> GetByIdForUpdateAsync(int id)
+        {
+            return await _context.InventoryMovements                
+                .Include(x => x.Product)
+                .FirstOrDefaultAsync(x => x.Id == id);
+        }
 
         public async Task<IEnumerable<InventoryMovement>> GetByProductIdAsync(int productId)
         {
@@ -190,11 +196,6 @@ namespace API_PRIMECRM.Infraestructure.Persistence.Repositories.Inventory
         public async Task<decimal> GetCurrentAverageUnitCostAsync(int productId)
         {
             var summary = await GetInventorySummaryAsync(productId);
-
-            if (summary.Stock <= 0)
-            {
-                return 0;
-            }
 
             var today = DateOnly.FromDateTime(DateTime.Today);
 

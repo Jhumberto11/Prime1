@@ -25,5 +25,6 @@ namespace API_PRIMECRM.Domain.Interfaces.Inventory
         Task<bool> ExistsMovementForSourceAsync(int productId, InventorySourceType sourceType, int sourceId, InventoryMovementType movementType);
 
         Task AddAsync(InventoryMovement movement);
+        Task<InventoryMovement?> GetByIdForUpdateAsync(int id);
     }
 }
