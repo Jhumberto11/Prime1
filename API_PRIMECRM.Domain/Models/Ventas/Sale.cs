@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace API_PRIMECRM.Domain.Models.Ventas
@@ -110,6 +111,7 @@ namespace API_PRIMECRM.Domain.Models.Ventas
         [MaxLength(500)]
         public string? Notes { get; set; }
 
+        [Column(TypeName = "decimal(18,2)")]
         public decimal Profit { get; set; } = 0m;
 
         

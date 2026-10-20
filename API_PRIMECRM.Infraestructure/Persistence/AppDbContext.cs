@@ -174,6 +174,14 @@ namespace PrimeCRM_Api.Infraestructure.Persistence
                     .HasForeignKey(s => s.SalesChannelId)
                     .OnDelete(DeleteBehavior.Restrict);
 
+
+                e.HasOne(s => s.InventoryMovement)
+                .WithOne(im => im.Sale)
+                .HasForeignKey<Sale>(s => s.InventoryMovementId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+
+
                 e.HasIndex(s => new
                 {
                     s.ProductId,
