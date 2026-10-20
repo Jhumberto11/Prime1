@@ -22,6 +22,19 @@ builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 
 
+//Servicio de React
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("React", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173")
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
+
+
 // Repositorio Generico
 builder.Services.AddScoped
     (
@@ -76,7 +89,10 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseCors("React");
+
 app.UseAuthorization();
+
 
 app.MapControllers();
 

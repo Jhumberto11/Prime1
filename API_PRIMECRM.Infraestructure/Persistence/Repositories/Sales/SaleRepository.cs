@@ -81,7 +81,7 @@ namespace API_PRIMECRM.Infraestructure.Persistence.Repositories.Sales
 
         public async Task<Sale?> GetByIdForUpdateAsync(int id)
         {
-            var sale = await _context.Sales.FirstOrDefaultAsync(x => x.Id == id);
+            var sale = await _context.Sales.Include(s => s.InventoryMovement).FirstOrDefaultAsync(x => x.Id == id);
             return sale;
         }
 
