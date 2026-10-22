@@ -136,7 +136,7 @@ namespace API_PRIMECRM.Application.Services.Sales
             newSale.InventoryMovement = newMovementSale;
 
             await _saleRepository.AddAsync(newSale);
-            _unitOfWork.SaveChangesAsync();
+            await  _unitOfWork.SaveChangesAsync();
 
             return newSale;
         }
