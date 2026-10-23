@@ -1,4 +1,5 @@
 ﻿using API_PRIMECRM.Domain.Models.Finances.Enums;
+using API_PRIMECRM.Domain.Models.Ventas;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -19,8 +20,23 @@ namespace API_PRIMECRM.Domain.Models.Finances
         [Column(TypeName = "decimal(18,2)")]
         public decimal AmountTransaction { get; set; }
 
+        public PaymentStatus PaymentStatus { get; set; } = PaymentStatus.Deducted;
+
         public int? TransactionId { get; set; }
         public Transaction? Transaction { get; set; }
+
+
+        public int? AdsTransactionId { get; set; }
+        public AdsTransactions? AdsTransaction { get; set; }
+
+
+        public int? SaleId { get; set;}
+
+        public Sale? Sale { get; set; }
+
+
+
+
 
 
     }

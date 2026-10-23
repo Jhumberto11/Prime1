@@ -5,7 +5,7 @@ using System.Text;
 
 namespace API_PRIMECRM.Domain.Models.Finances
 {
-    public class Transaction
+    public class Transaction : TransactionsBase
     {
 
         public int Id { get; set; }
@@ -15,8 +15,6 @@ namespace API_PRIMECRM.Domain.Models.Finances
         public decimal Amount { get; set; }
         public TypeTransaction TypeTransaction { get; set; }
 
-        public int FinancialTransactionsHistoryId { get; set; }
-        public FinancialTransactionsHistory FinancialTransactionsHistory { get; set; }
 
     }
 }

@@ -10,7 +10,7 @@ using System.Text;
 
 namespace API_PRIMECRM.Domain.Models.Ventas
 {
-    public class Sale
+    public class Sale : TransactionsBase
     {
         public int Id { get; set; }
 
