@@ -8,7 +8,7 @@ namespace API_PRIMECRM.Domain.Models.Finances.Enums
     {
         Income = 1,
         Spent = 2,
-        StockMarket = 3
+        StockMarket = 3 // Mercado de acciones 
 
 
     }
