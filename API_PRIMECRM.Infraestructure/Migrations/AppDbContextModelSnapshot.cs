@@ -17,7 +17,7 @@ namespace API_PRIMECRM.Infraestructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.12")
+                .HasAnnotation("ProductVersion", "10.0.13")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -37,16 +37,19 @@ namespace API_PRIMECRM.Infraestructure.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
+                    b.Property<int>("OrderStatus")
+                        .HasColumnType("int");
+
                     b.Property<int>("ProductID")
                         .HasColumnType("int");
 
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
-                    b.Property<int?>("SourceId")
+                    b.Property<int?>("RestockOrderId")
                         .HasColumnType("int");
 
-                    b.Property<int>("SourceType")
+                    b.Property<int?>("SaleId")
                         .HasColumnType("int");
 
                     b.Property<int>("Type")
@@ -58,6 +61,8 @@ namespace API_PRIMECRM.Infraestructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ProductID");
+
+                    b.HasIndex("ProductID", "Date");
 
                     b.ToTable("InventoryMovements");
                 });
@@ -397,6 +402,9 @@ namespace API_PRIMECRM.Infraestructure.Migrations
                     b.Property<int>("FreightCompanyId")
                         .HasColumnType("int");
 
+                    b.Property<int>("InventoryMovementId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Notes")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
@@ -429,6 +437,9 @@ namespace API_PRIMECRM.Infraestructure.Migrations
 
                     b.HasIndex("FreightCompanyId");
 
+                    b.HasIndex("InventoryMovementId")
+                        .IsUnique();
+
                     b.HasIndex("PaymentMethodId");
 
                     b.HasIndex("ProductId");
@@ -458,6 +469,9 @@ namespace API_PRIMECRM.Infraestructure.Migrations
                     b.Property<int>("FundsLocation")
                         .HasColumnType("int");
 
+                    b.Property<int>("InventoryMovementId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Municipality")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -469,6 +483,9 @@ namespace API_PRIMECRM.Infraestructure.Migrations
 
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
+
+                    b.Property<decimal>("Profit")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
@@ -482,17 +499,20 @@ namespace API_PRIMECRM.Infraestructure.Migrations
                     b.Property<int>("SaleStatus")
                         .HasColumnType("int");
 
-                    b.Property<int>("SalesChannelId")
+                    b.Property<int?>("SalesChannelId")
                         .HasColumnType("int");
 
                     b.Property<int>("SettlementStatus")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("ShippingCost")
+                    b.Property<decimal>("ShippingCostRate")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("ShippingPaymentMode")
                         .HasColumnType("int");
+
+                    b.Property<decimal>("TotalShippingCost")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("TrackingNumber")
                         .IsRequired()
@@ -504,11 +524,14 @@ namespace API_PRIMECRM.Infraestructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CourierCompanyId");
-
-                    b.HasIndex("ProductId");
+                    b.HasIndex("InventoryMovementId")
+                        .IsUnique();
 
                     b.HasIndex("SalesChannelId");
+
+                    b.HasIndex("ProductId", "SaleDate");
+
+                    b.HasIndex("CourierCompanyId", "SaleStatus", "SettlementStatus");
 
                     b.ToTable("Sales");
                 });
@@ -562,6 +585,12 @@ namespace API_PRIMECRM.Infraestructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("API_PRIMECRM.Domain.Models.Inventario.InventoryMovement", "InventoryMovement")
+                        .WithOne("RestockOrder")
+                        .HasForeignKey("API_PRIMECRM.Domain.Models.Reabastecimimento.RestockOrder", "InventoryMovementId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("API_PRIMECRM.Domain.Models.Masters.PaymentMethod", "PaymentMethod")
                         .WithMany("RestockOrders")
                         .HasForeignKey("PaymentMethodId")
@@ -576,6 +605,8 @@ namespace API_PRIMECRM.Infraestructure.Migrations
 
                     b.Navigation("FreightCompany");
 
+                    b.Navigation("InventoryMovement");
+
                     b.Navigation("PaymentMethod");
 
                     b.Navigation("Product");
@@ -589,6 +620,12 @@ namespace API_PRIMECRM.Infraestructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("API_PRIMECRM.Domain.Models.Inventario.InventoryMovement", "InventoryMovement")
+                        .WithOne("Sale")
+                        .HasForeignKey("API_PRIMECRM.Domain.Models.Ventas.Sale", "InventoryMovementId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("API_PRIMECRM.Domain.Models.Masters.Product", "Product")
                         .WithMany("Sales")
                         .HasForeignKey("ProductId")
@@ -598,14 +635,22 @@ namespace API_PRIMECRM.Infraestructure.Migrations
                     b.HasOne("API_PRIMECRM.Domain.Models.Masters.SalesChannel", "SalesChannel")
                         .WithMany("Sales")
                         .HasForeignKey("SalesChannelId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("CourierCompany");
+
+                    b.Navigation("InventoryMovement");
 
                     b.Navigation("Product");
 
                     b.Navigation("SalesChannel");
+                });
+
+            modelBuilder.Entity("API_PRIMECRM.Domain.Models.Inventario.InventoryMovement", b =>
+                {
+                    b.Navigation("RestockOrder");
+
+                    b.Navigation("Sale");
                 });
 
             modelBuilder.Entity("API_PRIMECRM.Domain.Models.Liquidaciones.Liquidation", b =>

@@ -1,5 +1,7 @@
 ﻿using API_PRIMECRM.Domain.Models.Inventario.Enums;
 using API_PRIMECRM.Domain.Models.Masters;
+using API_PRIMECRM.Domain.Models.Reabastecimimento;
+using API_PRIMECRM.Domain.Models.Ventas;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -18,19 +20,26 @@ namespace API_PRIMECRM.Domain.Models.Inventario
 
 
         public DateOnly Date { get; set; }
-        public InventoryMovementType Type { get; set; }
+        public InventoryMovementType Type { get; set; } // Tipo de movimiento de productos
         public int Quantity { get; set; }
 
         [Column(TypeName = "decimal(18,2)")]
         public decimal UnitCost { get; set; }
-        public InventorySourceType SourceType { get; set; }
-
-        public int? SourceId { get; set; }
 
         [MaxLength(500)]
         public string? Notes { get; set; }
 
         // Navigation Property
+
+        public OrderStatus OrderStatus { get; set; } = OrderStatus.InTransit;
+
+        public int? RestockOrderId { get; set; }
+        public RestockOrder? RestockOrder { get; set; }
+
+        public int? SaleId { get; set; }
+        public Sale? Sale { get; set; }
+
+        
 
 
     }

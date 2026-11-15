@@ -7,6 +7,9 @@ using API_PRIMECRM.Domain.Models.Ventas;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using API_PRIMECRM.Domain.Models.Finances;
+using System.Security.Cryptography;
+
 
 namespace PrimeCRM_Api.Infraestructure.Persistence
 {
@@ -66,6 +69,14 @@ namespace PrimeCRM_Api.Infraestructure.Persistence
         public DbSet<LiquidationItem> LiquidationItems { get; set; }
 
 
+        // ==========================
+        // FINANCE
+        // =====================
+
+        public DbSet<Transaction> Transactions { get; set; }
+        public DbSet<FinancialTransactionsHistory> FinancialTransactionsHistory { get; set; }
+
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -77,8 +88,50 @@ namespace PrimeCRM_Api.Infraestructure.Persistence
             RestockConfigure(modelBuilder);
             ConfigureSale(modelBuilder);
             ConfigureLiquidation(modelBuilder);
+            ConfigureFinance(modelBuilder);
 
             
+
+        }
+        
+
+        private void ConfigureFinance(ModelBuilder modelBuilder)
+        {
+
+            //History
+            modelBuilder.Entity<FinancialTransactionsHistory>(e =>
+            {
+                e.HasKey(fth => fth.Id);
+
+            }
+
+            );
+
+
+            // Transactions
+            modelBuilder.Entity<Transaction>(e =>
+            {
+
+                e.HasKey(t => t.Id);
+
+                e.HasOne(t => t.FinancialTransactionsHistory)
+                    .WithOne(fht => fht.Transaction)
+                    .HasForeignKey<Transaction>(t => t.FinancialTransactionsHistoryId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+
+
+            // Publicidad
+            modelBuilder.Entity<AdsTransactions>(e =>
+            {
+                e.HasKey(ads => ads.Id);
+
+                e.HasOne(ads => ads.FinancialTransactionsHistory)
+                .WithOne(fth => fth.AdsTransaction)
+                .HasForeignKey<AdsTransactions>(ads => ads.FinancialTransactionsHistoryId)
+                .OnDelete(DeleteBehavior.Restrict);
+            });
 
         }
         private void ConfigureProduct(ModelBuilder modelBuilder)
@@ -115,17 +168,8 @@ namespace PrimeCRM_Api.Infraestructure.Persistence
                     i.Date
                 });
 
-                e.HasIndex(i => new
-                {
-                    i.ProductID,
-                    i.SourceType,
-                    i.SourceId,
-                    i.Type
-                })
-                .IsUnique()
-                .HasFilter(
-                "[SourceId] IS NOT NULL AND [Type] IN (1, 2)");
-
+                
+              
 
             });
 
@@ -153,6 +197,12 @@ namespace PrimeCRM_Api.Infraestructure.Persistence
                     .WithMany(pm => pm.RestockOrders)
                     .HasForeignKey(ro => ro.PaymentMethodId)
                     .OnDelete(DeleteBehavior.Restrict);
+
+                e.HasOne(ro => ro.InventoryMovement)
+                .WithOne(im => im.RestockOrder)
+                .HasForeignKey<RestockOrder>(ro => ro.InventoryMovementId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             });
         }
 
@@ -176,6 +226,20 @@ namespace PrimeCRM_Api.Infraestructure.Persistence
                     .WithMany(sc => sc.Sales)
                     .HasForeignKey(s => s.SalesChannelId)
                     .OnDelete(DeleteBehavior.Restrict);
+
+
+                e.HasOne(s => s.InventoryMovement)
+                .WithOne(im => im.Sale)
+                .HasForeignKey<Sale>(s => s.InventoryMovementId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+                e.HasOne(s => s.FinancialTransactionsHistory)
+                .WithOne(fth => fth.Sale)
+                .HasForeignKey<Sale>(s => s.FinancialTransactionsHistoryId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+
+
 
                 e.HasIndex(s => new
                 {

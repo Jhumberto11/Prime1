@@ -12,8 +12,8 @@ using PrimeCRM_Api.Infraestructure.Persistence;
 namespace API_PRIMECRM.Infraestructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20261007013019_modificaciones-masters")]
-    partial class modificacionesmasters
+    [Migration("20261012233340_init")]
+    partial class init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -46,10 +46,7 @@ namespace API_PRIMECRM.Infraestructure.Migrations
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
-                    b.Property<int?>("SourceId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("SourceType")
+                    b.Property<int>("RestockOrderId")
                         .HasColumnType("int");
 
                     b.Property<int>("Type")
@@ -61,6 +58,8 @@ namespace API_PRIMECRM.Infraestructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ProductID");
+
+                    b.HasIndex("ProductID", "Date");
 
                     b.ToTable("InventoryMovements");
                 });
@@ -400,6 +399,9 @@ namespace API_PRIMECRM.Infraestructure.Migrations
                     b.Property<int>("FreightCompanyId")
                         .HasColumnType("int");
 
+                    b.Property<int>("InventoryMovementId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Notes")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
@@ -431,6 +433,9 @@ namespace API_PRIMECRM.Infraestructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("FreightCompanyId");
+
+                    b.HasIndex("InventoryMovementId")
+                        .IsUnique();
 
                     b.HasIndex("PaymentMethodId");
 
@@ -507,11 +512,11 @@ namespace API_PRIMECRM.Infraestructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CourierCompanyId");
-
-                    b.HasIndex("ProductId");
-
                     b.HasIndex("SalesChannelId");
+
+                    b.HasIndex("ProductId", "SaleDate");
+
+                    b.HasIndex("CourierCompanyId", "SaleStatus", "SettlementStatus");
 
                     b.ToTable("Sales");
                 });
@@ -565,6 +570,12 @@ namespace API_PRIMECRM.Infraestructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("API_PRIMECRM.Domain.Models.Inventario.InventoryMovement", "InventoryMovement")
+                        .WithOne("RestockOrder")
+                        .HasForeignKey("API_PRIMECRM.Domain.Models.Reabastecimimento.RestockOrder", "InventoryMovementId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("API_PRIMECRM.Domain.Models.Masters.PaymentMethod", "PaymentMethod")
                         .WithMany("RestockOrders")
                         .HasForeignKey("PaymentMethodId")
@@ -578,6 +589,8 @@ namespace API_PRIMECRM.Infraestructure.Migrations
                         .IsRequired();
 
                     b.Navigation("FreightCompany");
+
+                    b.Navigation("InventoryMovement");
 
                     b.Navigation("PaymentMethod");
 
@@ -609,6 +622,11 @@ namespace API_PRIMECRM.Infraestructure.Migrations
                     b.Navigation("Product");
 
                     b.Navigation("SalesChannel");
+                });
+
+            modelBuilder.Entity("API_PRIMECRM.Domain.Models.Inventario.InventoryMovement", b =>
+                {
+                    b.Navigation("RestockOrder");
                 });
 
             modelBuilder.Entity("API_PRIMECRM.Domain.Models.Liquidaciones.Liquidation", b =>

@@ -14,16 +14,17 @@ namespace API_PRIMECRM.Domain.Interfaces.Inventory
 
         Task<IEnumerable<InventoryMovement>>GetByProductIdAsync(int productId);
 
-        Task<IEnumerable<InventoryMovement>>GetBySourceAsync(InventorySourceType sourceType); //  int sourceid
+        Task<IEnumerable<InventoryMovement>>GetBySourceAsync(InventoryMovementType sourceType); //  int sourceid
 
         Task<int> GetCurrentStockAsync(int productId);
 
         Task<decimal> GetCurrentInventoryValueAsync(int productId);
 
-        Task<decimal?> GetCurrentAverageUnitCostAsync(int productId);
+        Task<decimal> GetCurrentAverageUnitCostAsync(int productId);
 
         Task<bool> ExistsMovementForSourceAsync(int productId, InventorySourceType sourceType, int sourceId, InventoryMovementType movementType);
 
         Task AddAsync(InventoryMovement movement);
+        Task<InventoryMovement?> GetByIdForUpdateAsync(int id);
     }
 }

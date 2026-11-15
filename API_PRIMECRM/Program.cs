@@ -1,5 +1,7 @@
+using API_PRIMECRM.Application.Services.InventoryMovements;
 using API_PRIMECRM.Application.Services.Master;
 using API_PRIMECRM.Application.Services.Restock_Orders;
+using API_PRIMECRM.Application.Services.Sales;
 using API_PRIMECRM.Domain.Interfaces;
 using API_PRIMECRM.Domain.Interfaces.Inventory;
 using API_PRIMECRM.Domain.Interfaces.Restock;
@@ -12,13 +14,31 @@ using API_PRIMECRM.Infraestructure.Persistence.Repositories.Restock_Order;
 using API_PRIMECRM.Infraestructure.Persistence.Repositories.Sales;
 using Microsoft.EntityFrameworkCore;
 using PrimeCRM_Api.Infraestructure.Persistence;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler =
+            ReferenceHandler.IgnoreCycles;
+    });// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+
+
+//Servicio de React
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("React", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173")
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 
 
 // Repositorio Generico
@@ -43,6 +63,8 @@ builder.Services.AddScoped<FreightCompanyAdminService>();
 builder.Services.AddScoped<SaleChannelProvider>();
 builder.Services.AddScoped<PaymentMethodProvider>();
 builder.Services.AddScoped<IRestockOrderService, RestockOrderService>();
+builder.Services.AddScoped<ISaleService, SaleService>();
+builder.Services.AddScoped<IInventoryMovementsService, InventoryMovementService>();
 
 
 
@@ -74,7 +96,10 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseCors("React");
+
 app.UseAuthorization();
+
 
 app.MapControllers();
 

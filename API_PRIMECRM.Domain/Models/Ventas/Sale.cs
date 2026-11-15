@@ -1,14 +1,16 @@
-﻿using API_PRIMECRM.Domain.Models.Liquidaciones;
+﻿using API_PRIMECRM.Domain.Models.Inventario;
+using API_PRIMECRM.Domain.Models.Liquidaciones;
 using API_PRIMECRM.Domain.Models.Masters;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace API_PRIMECRM.Domain.Models.Ventas
 {
-    public class Sale
+    public class Sale : TransactionsBase
     {
         public int Id { get; set; }
 
@@ -56,18 +58,26 @@ namespace API_PRIMECRM.Domain.Models.Ventas
 
         // Costo de envío al momento de la venta
         [Column(TypeName = "decimal(18,2)")]
-        public decimal ShippingCost { get; set; }
+        public decimal ShippingCostRate { get; set; }
+     
 
 
         // Comisión por manejo de efectivo
         [Column(TypeName = "decimal(18,2)")]
         public decimal CashHandlingFee { get; set; }
+        // Costo Total del envio
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal TotalShippingCost { get; set; }
 
 
         // Número de guía / tracking
         [MaxLength(100)]
         public string TrackingNumber { get; set; } = string.Empty;
         public LiquidationItem? LiquidationItem { get; set; } = null!;
+
+        public int InventoryMovementId { get; set; }
+        public InventoryMovement InventoryMovement { get; set; }
+
 
         
 
@@ -84,16 +94,16 @@ namespace API_PRIMECRM.Domain.Models.Ventas
 
         // Dónde se encuentra actualmente el dinero
         public FundsLocation FundsLocation { get; set; }
-            = FundsLocation.HeldByCourier;
+            = FundsLocation.NoSettle;
 
 
         // Cómo se maneja el costo de envío
         public ShippingPaymentMode ShippingPaymentMode { get; set; }
-            = ShippingPaymentMode.DeductFromSettlement;
+            = ShippingPaymentMode.Cash;
 
 
         // Canal donde se realizó la venta
-        public int SalesChannelId { get; set; }
+        public int? SalesChannelId { get; set; }
 
         public SalesChannel SalesChannel { get; set; } = null!;
 
@@ -101,35 +111,12 @@ namespace API_PRIMECRM.Domain.Models.Ventas
         [MaxLength(500)]
         public string? Notes { get; set; }
 
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal Profit { get; set; } = 0m;
 
-        // =========================
-        // PROPIEDADES CALCULADAS
-        // =========================
-
-        [NotMapped]
-        public decimal TotalShippingCost =>
-            ShippingCost + CashHandlingFee;
+        
 
 
-        [NotMapped]
-        public decimal TotalSettlementAmount =>
-            SaleAmount
-            - CashHandlingFee
-            - (ShippingPaymentMode == ShippingPaymentMode.DeductFromSettlement
-                ? ShippingCost
-                : 0);
-
-
-        [NotMapped]
-        public decimal CostOfGoodsSold =>
-            UnitCostAtSale * Quantity;
-
-
-        [NotMapped]
-        public decimal Profit =>
-            SaleAmount
-            - CostOfGoodsSold
-            - ShippingCost
-            - CashHandlingFee;
+ 
     }
 }

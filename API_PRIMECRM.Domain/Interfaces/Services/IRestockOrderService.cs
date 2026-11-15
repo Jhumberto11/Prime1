@@ -23,5 +23,10 @@ namespace API_PRIMECRM.Domain.Interfaces.Services
         Task<RestockOrder?> UpdateAsync(
             int id,
             UpdateRestockOrderDto dto);
+
+        Task<RestockOrder?> ChangeStatusDeliverded(int id, bool delivered);
+        Task<RestockOrder?> RevertStatusDeliveryAsync(int id);
+
+        Task<RestockOrder?> ChangeStatusPayments(int id, bool paid);
     }
 }

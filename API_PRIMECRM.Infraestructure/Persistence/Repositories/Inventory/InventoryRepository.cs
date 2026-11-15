@@ -1,4 +1,5 @@
-﻿using API_PRIMECRM.Domain.Interfaces.Inventory;
+﻿using API_PRIMECRM.Domain.DTOs.Inventory;
+using API_PRIMECRM.Domain.Interfaces.Inventory;
 using API_PRIMECRM.Domain.Models.Inventario;
 using API_PRIMECRM.Domain.Models.Inventario.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -29,8 +30,7 @@ namespace API_PRIMECRM.Infraestructure.Persistence.Repositories.Inventory
                .AsNoTracking()
                .AnyAsync(x =>
                    x.ProductID == productId &&
-                   x.SourceType == sourceType &&
-                   x.SourceId == sourceId &&
+                   
                    x.Type == movementType);
         }
 
@@ -50,6 +50,12 @@ namespace API_PRIMECRM.Infraestructure.Persistence.Repositories.Inventory
                 .Include(x => x.Product)
                 .FirstOrDefaultAsync(x => x.Id == id);
         }
+        public async Task<InventoryMovement?> GetByIdForUpdateAsync(int id)
+        {
+            return await _context.InventoryMovements                
+                .Include(x => x.Product)
+                .FirstOrDefaultAsync(x => x.Id == id);
+        }
 
         public async Task<IEnumerable<InventoryMovement>> GetByProductIdAsync(int productId)
         {
@@ -63,12 +69,12 @@ namespace API_PRIMECRM.Infraestructure.Persistence.Repositories.Inventory
 
         }
 
-        public async Task<IEnumerable<InventoryMovement>> GetBySourceAsync(InventorySourceType sourceType)
+        public async Task<IEnumerable<InventoryMovement>> GetBySourceAsync(InventoryMovementType sourceType)
         {
             return await _context.InventoryMovements
                 .AsNoTracking()
                 .Include(x => x.Product)
-                .Where(x => x.SourceType == sourceType)
+                .Where(x => x.Type == sourceType)
                 .OrderByDescending(x => x.Date)
                 .ThenByDescending(x => x.Id)
                 .ToListAsync();
@@ -84,40 +90,55 @@ namespace API_PRIMECRM.Infraestructure.Persistence.Repositories.Inventory
         // =========================
 
 
-        public async Task<decimal> GetCurrentInventoryValueAsync(int productId)
-        {
-            var summary = await GetInventorySummaryAsync(productId);
-
-            return Math.Round(
-               summary.InventoryValue,
-               2,
-               MidpointRounding.AwayFromZero);
-        }
-
-        public async Task<decimal?> GetCurrentAverageUnitCostAsync(int productId)
-        {
-            var summary =
-                await GetInventorySummaryAsync(productId);
-
-            if (summary.Stock <= 0)
-            {
-                return null;
-            }
-
-            return Math.Round(
-                summary.InventoryValue / summary.Stock,
-                2,
-                MidpointRounding.AwayFromZero);
-        }
-
        
 
-        public async Task<int> GetCurrentStockAsync(int productId)
+
+
+        /// <summary>
+        /// Inventario Total
+        /// </summary>
+        /// <returns></returns>
+        public async Task<List<ActualInventoryDto>> GetInventorySummaryAsync()
         {
-            var summary = await GetInventorySummaryAsync(productId);
-            return summary.Stock;
+            return await _context.InventoryMovements
+                .AsNoTracking()
+                .GroupBy(m => new
+                {
+                    m.ProductID,
+                    m.Product.Name
+                })
+                .Select(g => new ActualInventoryDto
+                {
+                    ProductId = g.Key.ProductID,
+                    ProductName = g.Key.Name,
+
+                    TotalEntries = g.Sum(m =>
+                        m.Type == InventoryMovementType.AdjustmentIn || m.Type == InventoryMovementType.InitialStock || m.Type == InventoryMovementType.RestockIn || m.Type == InventoryMovementType.SaleReturn
+                            ? m.Quantity : 0),
+
+                    TotalExits = g.Sum(m =>
+                        m.Type == InventoryMovementType.SaleOut || m.Type == InventoryMovementType.AdjustmentOut
+                            ? m.Quantity : 0),
+
+                    ActualStock = g.Sum(m =>
+                                        m.Type == InventoryMovementType.RestockIn ||
+                                        m.Type == InventoryMovementType.SaleReturn ||
+                                        m.Type == InventoryMovementType.AdjustmentIn ||
+                                        m.Type == InventoryMovementType.InitialStock
+                                            ? m.Quantity
+                                            : m.Type == InventoryMovementType.SaleOut ||
+                                              m.Type == InventoryMovementType.AdjustmentOut
+                                                ? -m.Quantity
+                                                : 0),
+
+                    LastMovementDate = g.Max(m => m.Date)
+                })
+                .ToListAsync();
         }
 
+
+
+      
 
 
 
@@ -172,6 +193,58 @@ namespace API_PRIMECRM.Infraestructure.Persistence.Repositories.Inventory
             return summary ?? new InventorySummary();
         }
 
+        public async Task<decimal> GetCurrentAverageUnitCostAsync(int productId)
+        {
+            var summary = await GetInventorySummaryAsync(productId);
+
+            var today = DateOnly.FromDateTime(DateTime.Today);
+
+            int[] months = { 3, 6, 9, 12 };
+
+            foreach (var month in months)
+            {
+                var startDate = today.AddMonths(-month);
+
+                var costs = await _context.InventoryMovements
+                    .AsNoTracking()
+                    .Where(x =>
+                        x.ProductID == productId &&
+                        x.Type == InventoryMovementType.RestockIn &&
+                        x.Date >= startDate &&
+                        x.Date <= today &&
+                        x.Quantity > 0 &&
+                        x.UnitCost > 0)
+                    .GroupBy(x => x.ProductID)
+                    .Select(g => new
+                    {
+                        TotalQuantity = g.Sum(x => x.Quantity),
+
+                        TotalCost = g.Sum(x =>
+                            x.Quantity * x.UnitCost)
+                    })
+                    .FirstOrDefaultAsync();
+
+                if (costs != null && costs.TotalQuantity > 0)
+                {
+                    return Math.Round(
+                        costs.TotalCost / costs.TotalQuantity,
+                        2,
+                        MidpointRounding.AwayFromZero);
+                }
+            }
+
+            return 0;
+        }
+
+        public Task<int> GetCurrentStockAsync(int productId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<decimal> GetCurrentInventoryValueAsync(int productId)
+        {
+            throw new NotImplementedException();
+        }
 
         private sealed class InventorySummary
         {

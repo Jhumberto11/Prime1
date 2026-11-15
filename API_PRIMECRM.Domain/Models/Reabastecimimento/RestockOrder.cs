@@ -1,4 +1,5 @@
-﻿using API_PRIMECRM.Domain.Models.Masters;
+﻿using API_PRIMECRM.Domain.Models.Inventario;
+using API_PRIMECRM.Domain.Models.Masters;
 using API_PRIMECRM.Domain.Models.Reabastecimimento.Enums;
 using System;
 using System.Collections.Generic;
@@ -104,6 +105,9 @@ namespace API_PRIMECRM.Domain.Models.Reabastecimimento
 
         [MaxLength(500)]
         public string? Notes { get; set; }
+
+        public int InventoryMovementId { get; set; }
+        public InventoryMovement InventoryMovement { get; set; } = new InventoryMovement();
 
 
     }
