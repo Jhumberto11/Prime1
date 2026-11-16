@@ -1,4 +1,4 @@
-﻿using API_PRIMECRM.Domain.Models.Finances;
+﻿using API_PRIMECRM.Domain.Models.Finances.History;
 using System;
 using System.Collections.Generic;
 using System.Text;

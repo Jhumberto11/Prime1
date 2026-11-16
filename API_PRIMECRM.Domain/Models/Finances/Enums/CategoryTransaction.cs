@@ -6,6 +6,10 @@ namespace API_PRIMECRM.Domain.Models.Finances.Enums
 {
     public enum CategoryTransaction
     {
+        /// <summary>
+        /// Son transaciones no relacionadas a ventas
+        /// </summary>
+
         // Ingresos
         Transfer = 1,
         CashBack = 2,

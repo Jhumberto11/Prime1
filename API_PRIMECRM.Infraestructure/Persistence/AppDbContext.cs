@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Text;
 using API_PRIMECRM.Domain.Models.Finances;
 using System.Security.Cryptography;
+using API_PRIMECRM.Domain.Models.Finances.History;
 
 
 namespace PrimeCRM_Api.Infraestructure.Persistence

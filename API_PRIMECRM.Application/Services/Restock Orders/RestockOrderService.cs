@@ -4,6 +4,8 @@ using API_PRIMECRM.Domain.Interfaces.Inventory;
 using API_PRIMECRM.Domain.Interfaces.Master_Interfaces;
 using API_PRIMECRM.Domain.Interfaces.Restock;
 using API_PRIMECRM.Domain.Interfaces.Services;
+using API_PRIMECRM.Domain.Models.Finances.Enums;
+using API_PRIMECRM.Domain.Models.Finances.History;
 using API_PRIMECRM.Domain.Models.Inventario;
 using API_PRIMECRM.Domain.Models.Inventario.Enums;
 using API_PRIMECRM.Domain.Models.Masters;
@@ -197,6 +199,28 @@ namespace API_PRIMECRM.Application.Services.Restock_Orders
             restockOrder.InventoryMovement = newInventoryMovement;
 
 
+
+
+            /// ---------------------------
+            // Transaccion de Dinero
+            /// ------------------------------
+
+            var newFinancialTransaction = new FinancialTransactionsHistory
+            {
+                Date = DateTime.UtcNow,
+                TypeTransaction = FinancialTypeTransaction.RestockTransaction,
+                AmountTransaction = restockOrder.EstimatedTotalSV,
+                PaymentStatus = Status.Pending,
+            };
+
+            // -------------------------------------------------
+            // ASOCIAR TRANSACCION FINANCIERA A RESTOCK
+            // -------------------------------------------------
+
+
+            restockOrder.FinancialTransactionsHistory = newFinancialTransaction;
+
+
             await _restockOrderRepository
                 .AddAsync(restockOrder);
 
@@ -303,6 +327,8 @@ namespace API_PRIMECRM.Application.Services.Restock_Orders
                 restockOrder.ActualFreight ?? 0.00m,
                 otherCharges,
                 restockOrder.Quantity);
+
+            restockOrder.FinancialTransactionsHistory.AmountTransaction += otherCharges;
 
 
 
@@ -433,6 +459,13 @@ namespace API_PRIMECRM.Application.Services.Restock_Orders
 
             inventoryMovement.UnitCost =
                 restockOrder.EstimatedLandedUnitCost;
+
+            // ACTUALIZAR TRANSACCIÓN FINANCIERA
+
+            restockOrder.FinancialTransactionsHistory.AmountTransaction =
+                restockOrder.EstimatedTotalSV;
+
+
 
 
             return await _restockOrderRepository.UpdateAsync(restockOrder);

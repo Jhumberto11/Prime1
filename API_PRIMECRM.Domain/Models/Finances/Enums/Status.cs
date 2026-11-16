@@ -4,10 +4,11 @@ using System.Text;
 
 namespace API_PRIMECRM.Domain.Models.Finances.Enums
 {
-    public enum PaymentStatus
+    public enum Status
     {
         Pending = 0,
-        Deducted = 1
+        Deducted = 1,
+        Applied = 2
 
     }
 }

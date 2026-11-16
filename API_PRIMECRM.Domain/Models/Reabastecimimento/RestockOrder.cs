@@ -1,4 +1,5 @@
-﻿using API_PRIMECRM.Domain.Models.Inventario;
+﻿using API_PRIMECRM.Domain.Models.Finances.History;
+using API_PRIMECRM.Domain.Models.Inventario;
 using API_PRIMECRM.Domain.Models.Masters;
 using API_PRIMECRM.Domain.Models.Reabastecimimento.Enums;
 using System;
@@ -108,6 +109,8 @@ namespace API_PRIMECRM.Domain.Models.Reabastecimimento
 
         public int InventoryMovementId { get; set; }
         public InventoryMovement InventoryMovement { get; set; } = new InventoryMovement();
+        public int HistoryTransactionId { get; set; }
+        public FinancialTransactionsHistory FinancialTransactionsHistory { get; set; } = new FinancialTransactionsHistory();
 
 
     }

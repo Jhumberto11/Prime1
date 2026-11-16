@@ -1,5 +1,5 @@
 using System;
-using API_PRIMECRM.Domain.Models.Finances;
+using API_PRIMECRM.Domain.Models.Finances.History;
 using Microsoft.EntityFrameworkCore;
 using PrimeCRM_Api.Infraestructure.Persistence;
 

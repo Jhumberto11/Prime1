@@ -3,11 +3,14 @@ using API_PRIMECRM.Domain.Interfaces;
 using API_PRIMECRM.Domain.Interfaces.Inventory;
 using API_PRIMECRM.Domain.Interfaces.Sales;
 using API_PRIMECRM.Domain.Interfaces.Services;
+using API_PRIMECRM.Domain.Models.Finances.Enums;
+using API_PRIMECRM.Domain.Models.Finances.History;
 using API_PRIMECRM.Domain.Models.Inventario;
 using API_PRIMECRM.Domain.Models.Inventario.Enums;
 using API_PRIMECRM.Domain.Models.Masters;
 using API_PRIMECRM.Domain.Models.Reabastecimimento;
 using API_PRIMECRM.Domain.Models.Ventas;
+using Microsoft.EntityFrameworkCore.Query.Internal;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -37,11 +40,11 @@ namespace API_PRIMECRM.Application.Services.Sales
         public async Task<Sale> CreateAsync(CreateSaleDto dto)
         {
 
-            if(dto == null)
+            if (dto == null)
             {
                 throw new ArgumentNullException(nameof(dto));
             }
-            if(dto.Quantity <= 0)
+            if (dto.Quantity <= 0)
             {
                 throw new InvalidOperationException("Cantidad no puede ser menor o igual a 0");
 
@@ -84,15 +87,19 @@ namespace API_PRIMECRM.Application.Services.Sales
             shippingCost,
             cashHandlingFee);
 
+            
 
 
 
-            var totalCostShipping = CalculateTotalShippingSale(courier.DeliveryRate, courier.CashHandlingValue,  dto.SaleAmount, dto.ShippingPaymentMode);
+
+            var totalCostShipping = CalculateTotalShippingSale(courier.DeliveryRate, courier.CashHandlingValue, dto.SaleAmount, dto.ShippingPaymentMode);
+
+            var settlementAmount = CalculateSettlementAmount(dto.SaleAmount, totalCostShipping);
 
 
-          
 
 
+            /// CREAR VENTA
             var newSale = new Sale()
             {
 
@@ -112,9 +119,11 @@ namespace API_PRIMECRM.Application.Services.Sales
                 Profit = profit,
                 ShippingPaymentMode = dto.ShippingPaymentMode,
                 SaleStatus = dto.SaleStatus,
-                FundsLocation = dto.FundsLocation
+                FundsLocation = dto.FundsLocation,
+                SettlementAmount = settlementAmount
             };
 
+            /// CREAR MOVIMIENTO DE INVENTARIO
             var newMovementSale = new InventoryMovement()
             {
 
@@ -132,11 +141,24 @@ namespace API_PRIMECRM.Application.Services.Sales
                 UnitCost = unitCost
 
             };
-
+            /// ASOCIAAR MOVIMIENTO DE INVENTARIO A LA VENTA
             newSale.InventoryMovement = newMovementSale;
 
+            /// CREAR HISTORIAL DE TRANSACCION FINANCIERA
+
+            var newFinancialTransaction = new FinancialTransactionsHistory()
+            {
+                TypeTransaction = FinancialTypeTransaction.SettlementTransaction,
+                AmountTransaction = newSale.SaleAmount,
+                PaymentStatus = Status.Pending,
+                Sale = newSale
+            };
+
+
+
+
             await _saleRepository.AddAsync(newSale);
-            await  _unitOfWork.SaveChangesAsync();
+            await _unitOfWork.SaveChangesAsync();
 
             return newSale;
         }
@@ -187,7 +209,7 @@ namespace API_PRIMECRM.Application.Services.Sales
                 throw new ArgumentException(
                     "La fecha inicial no puede superar la final.");
 
-            
+
 
             var sales = await _saleRepository.GetByDateRangeAsync(from, to);
 
@@ -220,6 +242,38 @@ namespace API_PRIMECRM.Application.Services.Sales
         }
 
         // ==========================
+        // INFORMACION FINANCIERA DE LA VENTA
+        // ==========================
+
+        public async Task ChangeFundsLocalation(int saleId, FundsLocation fundsLocation)
+        {
+            var sale = await _saleRepository.GetByIdForUpdateAsync(saleId);
+            if (sale == null)
+            {
+                throw new KeyNotFoundException($"Venta con id {saleId} no econtrada");
+            }
+
+            sale.FundsLocation = fundsLocation;
+        }
+
+        public async Task ChangeToSettle(int saleId)
+        {
+            var sale = await _saleRepository.GetByIdForUpdateAsync(saleId);
+            if (sale == null)
+            {
+                throw new KeyNotFoundException($"Venta con id {saleId} no econtrada");
+            }
+            sale.SettlementStatus = SettlementStatus.Settled;
+
+            sale.FinancialTransactionsHistory.PaymentStatus = Status.Applied;
+
+        }
+
+
+
+
+
+        // ==========================
         // ACTUALIZAR TRACKING
         // ==========================
 
@@ -239,9 +293,16 @@ namespace API_PRIMECRM.Application.Services.Sales
         }
 
 
-        private decimal CalculateTotalShippingSale(decimal costShipping , decimal cashHandi, decimal montSale , ShippingPaymentMode modePayment)
+
+
+
+
+        // ==========================
+        // MÉTODOS PRIVADOS
+        // ==========================
+        private decimal CalculateTotalShippingSale(decimal costShipping, decimal cashHandi, decimal montSale, ShippingPaymentMode modePayment)
         {
-            if(modePayment == ShippingPaymentMode.Cash)
+            if (modePayment == ShippingPaymentMode.Cash)
             {
                 return (costShipping + (cashHandi * montSale));
             }
@@ -250,20 +311,13 @@ namespace API_PRIMECRM.Application.Services.Sales
         }
 
 
-
-
-
-        // ==========================
-        // MÉTODOS PRIVADOS
-        // ==========================
-
         private async Task ChangeStatusAsync(
             int saleId,
             SaleStatus newStatus)
         {
-           
+
             var sale = await _saleRepository.GetByIdForUpdateAsync(saleId);
-            if(sale == null)
+            if (sale == null)
             {
                 throw new KeyNotFoundException($"Venta con id {saleId} no econtrada");
             }
@@ -275,16 +329,16 @@ namespace API_PRIMECRM.Application.Services.Sales
 
                 sale.InventoryMovement.OrderStatus = OrderStatus.Delivered;
             }
-            if (newStatus == SaleStatus.NotDelivered) 
+            if (newStatus == SaleStatus.NotDelivered)
             {
 
                 sale.InventoryMovement.OrderStatus = OrderStatus.Delivered;
                 sale.InventoryMovement.Type = InventoryMovementType.SaleReturn;
             }
-            
+
 
             await _unitOfWork.SaveChangesAsync();
-            
+
         }
 
         private static decimal CalculateCashHandlingFee(
@@ -311,6 +365,13 @@ namespace API_PRIMECRM.Application.Services.Sales
                 - totalProductCost
                 - shippingCost
                 - cashHandlingFee;
+        }
+
+        private static decimal CalculateSettlementAmount(
+            decimal saleAmount,
+            decimal totalShippingCost)
+        {
+            return saleAmount - totalShippingCost;
         }
     }
 }

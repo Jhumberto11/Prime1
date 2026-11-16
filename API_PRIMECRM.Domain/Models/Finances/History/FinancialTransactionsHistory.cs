@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
 
-namespace API_PRIMECRM.Domain.Models.Finances
+namespace API_PRIMECRM.Domain.Models.Finances.History
 {
     public class FinancialTransactionsHistory
     {
@@ -20,7 +20,7 @@ namespace API_PRIMECRM.Domain.Models.Finances
         [Column(TypeName = "decimal(18,2)")]
         public decimal AmountTransaction { get; set; }
 
-        public PaymentStatus PaymentStatus { get; set; } = PaymentStatus.Deducted;
+        public Status PaymentStatus { get; set; } = Status.Deducted;
 
         public int? TransactionId { get; set; }
         public Transaction? Transaction { get; set; }

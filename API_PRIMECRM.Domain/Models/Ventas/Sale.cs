@@ -102,6 +102,9 @@ namespace API_PRIMECRM.Domain.Models.Ventas
             = ShippingPaymentMode.Cash;
 
 
+        /// Monto de venta a liquidar
+        public decimal SettlementAmount { get; set; }
+
         // Canal donde se realizó la venta
         public int? SalesChannelId { get; set; }
 
