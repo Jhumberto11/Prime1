@@ -27,5 +27,7 @@ namespace API_PRIMECRM.Domain.Interfaces.Services
         Task MarkAsNotDeliveredAsync(int saleId);
 
         Task MarkAsLostAsync(int saleId);
+        Task ChangeToSettle(int saleId);
+        Task ChangeFundsLocalation(int saleId, FundsLocation fundsLocation);    
     }
 }

@@ -219,5 +219,60 @@ namespace API_PRIMECRM.Controllers.Sales
                 return BadRequest(new { message = ex.Message });
             }
         }
+
+        // ==========================
+        // CAMBIAR LOCALIZACIÓN DE FONDOS 
+        // ==========================
+        // FundsLocation (ENUM) =
+        // ToCapital = 1, // ya los tengo disponibles en Cuenta BA, pero en cuenta de la empresa, no en mi cuenta personal
+        // Cash = 2, // Efectivo
+        // NEQUI = 3, // fondos en Plataforma link de pago
+        // NoSettle = 4, // Fondos No Liquidados por la empresa de envios
+        // BAC = 10, // Fondos en Banco Personal America Central
+        // BA = 11 // fondos en Banco Agricola, Cuenta Principal
+  
+        // ==========================
+        [HttpPatch("{id:int}/funds-location")]
+        public async Task<IActionResult> ChangeFundsLocation(
+            int id,
+            FundsLocation fundsLocationValue)
+        {
+            try
+            {
+                await _saleService.ChangeFundsLocalation(id, fundsLocationValue);
+
+                return Ok();
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        // ==========================
+        // MARCAR COMO PAGADA
+        // ==========================
+        [HttpPatch("{id:int}/as-settle")]
+        public async Task<IActionResult> MarkAsPaid(int id)
+        {
+            try
+            {
+                await _saleService.ChangeToSettle(id);
+
+                return Ok();
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
     }
 }
