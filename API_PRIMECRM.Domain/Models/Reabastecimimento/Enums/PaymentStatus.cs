@@ -7,6 +7,6 @@ namespace API_PRIMECRM.Domain.Models.Reabastecimimento.Enums
     public enum PaymentStatus
     {
         Pending = 1,
-        Posted = 2
+        Posted = 2 // Pagado
     }
 }

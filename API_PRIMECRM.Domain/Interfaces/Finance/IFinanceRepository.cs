@@ -8,6 +8,9 @@ public interface IFinanceRepository
     public Task<FinancialTransactionsHistory> GetFinancialTransactionByIdAsync(int id);
     public Task<IEnumerable<FinancialTransactionsHistory>> GetAllFinancialTransactionsAsync();
     public Task<IEnumerable<FinancialTransactionsHistory>> GetAllFinancialTransactionsFromDateAsync(DateTime fromDate);
+    public Task DeleteFinancialTransactionAsync(FinancialTransactionsHistory financialTransaction);
+    public Task<decimal> GetCapitalBalanceAsync();
+    
     
 
 

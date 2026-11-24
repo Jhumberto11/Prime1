@@ -1,4 +1,5 @@
 using System;
+using API_PRIMECRM.Domain.Models.Finances.Enums;
 using API_PRIMECRM.Domain.Models.Finances.History;
 using Microsoft.EntityFrameworkCore;
 using PrimeCRM_Api.Infraestructure.Persistence;
@@ -39,10 +40,22 @@ public class FinanceRepository : IFinanceRepository
         .Include(x => x.Sale)
         .Include(x => x.AdsTransaction)
         .Include(x => x.Transaction).
-        FirstOrDefaultAsync(x => x.Id == id);
+        FirstOrDefaultAsync(x => x.Id == id) 
+        ?? throw new KeyNotFoundException($"Financial transaction with ID {id} not found.");
         
            
     }
 
+    public async Task DeleteFinancialTransactionAsync(FinancialTransactionsHistory financialTransaction)
+    {
+        _context.FinancialTransactionsHistory.Remove(financialTransaction);
+    }
+    
+
+    public async Task<decimal> GetCapitalBalanceAsync()
+    {
+        return await _context.FinancialTransactionsHistory.AsNoTracking().Where(x => x.PaymentStatus == Status.Deducted || x.PaymentStatus == Status.Applied)
+            .SumAsync(x => x.AmountTransaction);
+    }
 
 }
