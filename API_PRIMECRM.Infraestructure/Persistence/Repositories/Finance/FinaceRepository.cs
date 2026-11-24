@@ -57,5 +57,5 @@ public class FinanceRepository : IFinanceRepository
         return await _context.FinancialTransactionsHistory.AsNoTracking().Where(x => x.PaymentStatus == Status.Deducted || x.PaymentStatus == Status.Applied)
             .SumAsync(x => x.AmountTransaction);
     }
-
+s
 }
