@@ -3,12 +3,14 @@ using API_PRIMECRM.Application.Services.Master;
 using API_PRIMECRM.Application.Services.Restock_Orders;
 using API_PRIMECRM.Application.Services.Sales;
 using API_PRIMECRM.Domain.Interfaces;
+using API_PRIMECRM.Domain.Interfaces.Finance;
 using API_PRIMECRM.Domain.Interfaces.Inventory;
 using API_PRIMECRM.Domain.Interfaces.Restock;
 using API_PRIMECRM.Domain.Interfaces.Sales;
 using API_PRIMECRM.Domain.Interfaces.Services;
 using API_PRIMECRM.Infraestructure.Persistence;
 using API_PRIMECRM.Infraestructure.Persistence.Repositories;
+using API_PRIMECRM.Infraestructure.Persistence.Repositories.Finance;
 using API_PRIMECRM.Infraestructure.Persistence.Repositories.Inventory;
 using API_PRIMECRM.Infraestructure.Persistence.Repositories.Restock_Order;
 using API_PRIMECRM.Infraestructure.Persistence.Repositories.Sales;
@@ -51,8 +53,8 @@ builder.Services.AddScoped<IRestockRepository, RestockOrderRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<ISaleRepository, SaleRepository>();
 builder.Services.AddScoped<IInventoryRepository, InventoryRepository>();
-
-
+builder.Services.AddScoped<IITransactionRepository, TransactionsRepository>();
+builder.Services.AddScoped<IFinanceRepository, FinanceRepository>();
 
 
 //// Servicios Especificos
@@ -65,6 +67,7 @@ builder.Services.AddScoped<PaymentMethodProvider>();
 builder.Services.AddScoped<IRestockOrderService, RestockOrderService>();
 builder.Services.AddScoped<ISaleService, SaleService>();
 builder.Services.AddScoped<IInventoryMovementsService, InventoryMovementService>();
+
 
 
 

@@ -1,5 +1,5 @@
 using System;
-using System.Transactions;
+using API_PRIMECRM.Domain.Models.Finances;
 
 namespace API_PRIMECRM.Domain.Interfaces.Finance;
 

@@ -26,7 +26,7 @@ public class TransactionsRepository : IITransactionRepository
         _context.Transactions.Remove(transaction);
         await _context.SaveChangesAsync();
     }
-    }
+    
 
     public async Task<IEnumerable<Transaction>> GetAllTransactionsAsync()
     {
