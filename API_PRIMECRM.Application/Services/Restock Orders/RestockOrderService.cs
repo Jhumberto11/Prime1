@@ -209,7 +209,7 @@ namespace API_PRIMECRM.Application.Services.Restock_Orders
             {
                 Date = DateTime.UtcNow,
                 TypeTransaction = FinancialTypeTransaction.RestockTransaction,
-                AmountTransaction = restockOrder.EstimatedTotalSV,
+                AmountTransaction =  -restockOrder.EstimatedTotalSV,
                 PaymentStatus = Status.Pending,
             };
 
@@ -463,7 +463,7 @@ namespace API_PRIMECRM.Application.Services.Restock_Orders
             // ACTUALIZAR TRANSACCIÓN FINANCIERA
 
             restockOrder.FinancialTransactionsHistory.AmountTransaction =
-                restockOrder.EstimatedTotalSV;
+                - restockOrder.EstimatedTotalSV;
 
 
 
@@ -598,9 +598,38 @@ namespace API_PRIMECRM.Application.Services.Restock_Orders
 
         }
 
-        public Task<RestockOrder?> ChangeStatusPayments(int id, bool paid)
+        public async Task ChangeStatusPayments(int id, Status status)
         {
-            throw new NotImplementedException();
+            
+            // VALIDAR ID
+            if (id <= 0)
+                throw new ArgumentException(
+                    "El ID del Restock debe ser mayor que cero.");
+
+            // BUSCAR ORDEN
+            var orderDetail = await _restockOrderRepository
+                .GetByIdForUpdateAsync(id);
+
+            if (orderDetail == null)
+                throw new KeyNotFoundException(
+                    $"Orden con ID {id} no encontrada.");
+
+            // VALIDAR ESTADO ACTUAL
+            if (orderDetail.PaymentStatus != PaymentStatus.Pending)
+                throw new InvalidOperationException(
+                    $"No se puede cambiar el estado de una orden " +
+                    $"que ya está en {orderDetail.PaymentStatus}.");
+
+            // CAMBIAR ESTADO SEGÚN RESULTADO
+            if (status == Status.Deducted)
+            {
+                orderDetail.PaymentStatus = PaymentStatus.Posted;
+                orderDetail.FinancialTransactionsHistory.PaymentStatus = Status.Deducted;
+         
+            }
+
+            // GUARDAR AMBOS CAMBIOS
+            await _restockOrderRepository.UpdateAsync(orderDetail);
         }
 
         public async Task<RestockOrder?> RevertStatusDeliveryAsync(int id)
