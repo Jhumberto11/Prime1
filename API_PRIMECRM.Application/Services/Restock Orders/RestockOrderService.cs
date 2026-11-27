@@ -357,7 +357,7 @@ namespace API_PRIMECRM.Application.Services.Restock_Orders
             // VALIDAR EMPRESA DE FLETE
             var freightCompany = await _freightCompanyRepository.GetByIdAsync(dto.FreightCompanyId);
 
-             if(freightCompany == null)
+            if(freightCompany == null)
                  throw new KeyNotFoundException(
                      $"No se encontró una empresa de flete con el ID {dto.FreightCompanyId}.");
 
@@ -598,6 +598,16 @@ namespace API_PRIMECRM.Application.Services.Restock_Orders
 
         }
 
+
+        /// <summary>
+        /// Cambia el estado de pago de la orden de reabastecimiento a "Pagado" si el estado actual es "Pendiente"
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="status"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
+        /// <exception cref="KeyNotFoundException"></exception>
+        /// <exception cref="InvalidOperationException"></exception>
         public async Task ChangeStatusPayments(int id, Status status)
         {
             
